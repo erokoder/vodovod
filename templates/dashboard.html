@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Vodovod Aplikacija{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4"><i class="fas fa-chart-bar"></i> Dashboard</h1>
+    
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">Ukupno korisnika</h5>
+                            <h2 class="mb-0">{{ ukupno_korisnika }}</h2>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-users fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">Neplaćeni računi</h5>
+                            <h2 class="mb-0">{{ neplaceni_racuni }}</h2>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-file-invoice fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">Ukupan dug</h5>
+                            <h2 class="mb-0">{{ "%.2f"|format(ukupan_dug) }} kn</h2>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-money-bill fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-tachometer-alt"></i> Brze akcije</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('novi_korisnik') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-user-plus"></i> Dodaj novog korisnika
+                        </a>
+                        <a href="{{ url_for('novo_ocitanje') }}" class="btn btn-outline-success">
+                            <i class="fas fa-plus-circle"></i> Novo očitanje
+                        </a>
+                        <button type="button" class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#generirajRacuneModal">
+                            <i class="fas fa-file-invoice-dollar"></i> Generiraj račune
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-info-circle"></i> O sustavu</h5>
+                </div>
+                <div class="card-body">
+                    <p>Aplikacija za upravljanje vodovodnim uslugama omogućuje:</p>
+                    <ul>
+                        <li>Upravljanje korisnicima</li>
+                        <li>Unos očitanja vodomjera</li>
+                        <li>Generiranje računa</li>
+                        <li>Praćenje plaćanja</li>
+                        <li>Pregled statistika</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal za generiranje računa -->
+<div class="modal fade" id="generirajRacuneModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Generiraj račune</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('generiraj_racune') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="period_od" class="form-label">Period od</label>
+                        <input type="date" class="form-control" id="period_od" name="period_od" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="period_do" class="form-label">Period do</label>
+                        <input type="date" class="form-control" id="period_do" name="period_do" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="cijena_po_kubiku" class="form-label">Cijena po m³ (kn)</label>
+                        <input type="number" step="0.01" class="form-control" id="cijena_po_kubiku" name="cijena_po_kubiku" value="2.50" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Odustani</button>
+                    <button type="submit" class="btn btn-primary">Generiraj račune</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

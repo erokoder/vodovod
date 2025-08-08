@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Novo očitanje - Vodovod Aplikacija{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="fas fa-plus-circle"></i> Novo očitanje</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="korisnik_id" class="form-label">Korisnik *</label>
+                            <select class="form-select" id="korisnik_id" name="korisnik_id" required>
+                                <option value="">Odaberite korisnika...</option>
+                                {% for korisnik in korisnici %}
+                                <option value="{{ korisnik.id }}">
+                                    {{ korisnik.ime }} {{ korisnik.prezime }} ({{ korisnik.broj_vodomjera }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="datum_ocitanja" class="form-label">Datum očitanja *</label>
+                            <input type="date" class="form-control" id="datum_ocitanja" name="datum_ocitanja" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="stanje_vodomjera" class="form-label">Stanje vodomjera (m³) *</label>
+                            <input type="number" step="0.01" class="form-control" id="stanje_vodomjera" name="stanje_vodomjera" required>
+                            <div class="form-text">Unesite trenutno stanje na vodomjeru</div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('ocitanja') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Povratak
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Spremi očitanje
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Postavi današnji datum kao zadanu vrijednost
+document.getElementById('datum_ocitanja').valueAsDate = new Date();
+</script>
+{% endblock %}

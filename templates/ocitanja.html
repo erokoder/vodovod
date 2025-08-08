@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Očitanja - Vodovod Aplikacija{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-clipboard-list"></i> Očitanja vodomjera</h1>
+        <a href="{{ url_for('novo_ocitanje') }}" class="btn btn-primary">
+            <i class="fas fa-plus-circle"></i> Novo očitanje
+        </a>
+    </div>
+    
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Datum</th>
+                            <th>Korisnik</th>
+                            <th>Broj vodomjera</th>
+                            <th>Stanje vodomjera (m³)</th>
+                            <th>Potrošnja (m³)</th>
+                            <th>Akcije</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ocitanje, korisnik in ocitanja %}
+                        <tr>
+                            <td>{{ ocitanje.datum_ocitanja.strftime('%d.%m.%Y') }}</td>
+                            <td>{{ korisnik.ime }} {{ korisnik.prezime }}</td>
+                            <td><span class="badge bg-info">{{ korisnik.broj_vodomjera }}</span></td>
+                            <td class="text-end">{{ "%.2f"|format(ocitanje.stanje_vodomjera) }}</td>
+                            <td class="text-end">
+                                {% if ocitanje.potrosnja %}
+                                    <span class="badge bg-success">{{ "%.2f"|format(ocitanje.potrosnja) }}</span>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <button class="btn btn-outline-primary btn-sm" title="Uredi">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center">Nema očitanja</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

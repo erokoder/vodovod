@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Dobrodošli - Vodovod Aplikacija{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <div class="hero-section">
+                <i class="fas fa-tint display-1 text-primary mb-4"></i>
+                <h1 class="display-4 mb-4">Vodovod Aplikacija</h1>
+                <p class="lead mb-5">Sustav za upravljanje vodovodnim uslugama</p>
+                <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-sign-in-alt"></i> Prijava
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-5">
+        <div class="col-md-4 text-center">
+            <div class="feature-box">
+                <i class="fas fa-users fa-3x text-primary mb-3"></i>
+                <h3>Upravljanje korisnicima</h3>
+                <p>Dodavanje, uređivanje i praćenje korisnika vodovodnih usluga</p>
+            </div>
+        </div>
+        <div class="col-md-4 text-center">
+            <div class="feature-box">
+                <i class="fas fa-clipboard-list fa-3x text-primary mb-3"></i>
+                <h3>Očitanja vodomjera</h3>
+                <p>Unos i praćenje očitanja vodomjera za sve korisnike</p>
+            </div>
+        </div>
+        <div class="col-md-4 text-center">
+            <div class="feature-box">
+                <i class="fas fa-file-invoice fa-3x text-primary mb-3"></i>
+                <h3>Upravljanje računima</h3>
+                <p>Generiranje računa i praćenje plaćanja</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
