@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="hr" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main}">
+<head>
+    <title>Moji Računi</title>
+</head>
+<body>
+<div th:block="layout:fragment='content'">
+    <!-- Welcome Message -->
+    <div class="alert alert-info" role="alert">
+        <i class="bi bi-info-circle"></i>
+        Dobrodošli, <strong th:text="${user.fullName}">Ime Prezime</strong>! 
+        <span th:if="${user.meterNumber}">
+            Vaš broj vodomjera je: <strong th:text="${user.meterNumber}">VM001</strong>
+        </span>
+    </div>
+
+    <!-- No Meter Message -->
+    <div th:unless="${user.meterNumber}" class="alert alert-warning" role="alert">
+        <i class="bi bi-exclamation-triangle"></i>
+        <strong>Napomena:</strong> Nemate dodjeljen broj vodomjera. Molimo kontaktirajte administratora.
+    </div>
+
+    <!-- Bills Section -->
+    <div th:if="${user.meterNumber}" class="card shadow">
+        <div class="card-header">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="bi bi-receipt"></i>
+                Moji Računi
+            </h6>
+        </div>
+        <div class="card-body">
+            <!-- Placeholder for bills - will be implemented later -->
+            <div class="text-center text-muted py-5">
+                <i class="bi bi-receipt fs-1"></i>
+                <h5 class="mt-3">Trenutno nemate računa</h5>
+                <p>Računi će se prikazati kada administrator unese očitanja i generira račune.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Information -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-info">
+                        <i class="bi bi-person-circle"></i>
+                        Moje Informacije
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <strong>Ime:</strong> <span th:text="${user.fullName}">Ime Prezime</span>
+                    </div>
+                    <div class="mb-2">
+                        <strong>Email:</strong> <span th:text="${user.email}">email@example.com</span>
+                    </div>
+                    <div th:if="${user.phoneNumber}" class="mb-2">
+                        <strong>Telefon:</strong> <span th:text="${user.phoneNumber}">+385 98 123 456</span>
+                    </div>
+                    <div th:if="${user.address}" class="mb-2">
+                        <strong>Adresa:</strong> <span th:text="${user.address}">Adresa</span>
+                    </div>
+                    <div th:if="${user.meterNumber}" class="mb-2">
+                        <strong>Broj vodomjera:</strong> 
+                        <span class="badge bg-info" th:text="${user.meterNumber}">VM001</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-success">
+                        <i class="bi bi-info-circle"></i>
+                        Korisne Informacije
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <h6>Kako funkcionira sustav:</h6>
+                    <ul class="small">
+                        <li>Administrator redovito čita vaš vodomjer</li>
+                        <li>Na temelju očitanja se generiraju računi</li>
+                        <li>Računi se prikazuju u ovoj sekciji</li>
+                        <li>Možete preuzeti PDF verziju računa</li>
+                    </ul>
+                    
+                    <h6 class="mt-3">Potrebna pomoć?</h6>
+                    <p class="small text-muted">
+                        Za sva pitanja kontaktirajte administratora sustava.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

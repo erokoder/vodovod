@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="hr" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main}">
+<head>
+    <title>Pregled Korisnika</title>
+</head>
+<body>
+<div th:block="layout:fragment='content'">
+    <!-- Navigation -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/dashboard">Pregled</a></li>
+            <li class="breadcrumb-item"><a href="/users">Korisnici</a></li>
+            <li class="breadcrumb-item active" th:text="${user.fullName}">Ime Prezime</li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="h3 mb-0">
+            <span th:text="${user.fullName}">Ime Prezime</span>
+            <span th:if="${user.role.name() == 'ADMIN'}" class="badge bg-danger ms-2">
+                <i class="bi bi-shield-check"></i>
+                Administrator
+            </span>
+            <span th:if="${user.role.name() == 'USER'}" class="badge bg-primary ms-2">
+                <i class="bi bi-person"></i>
+                Korisnik
+            </span>
+            <span th:if="${!user.enabled}" class="badge bg-secondary ms-2">
+                <i class="bi bi-x-circle"></i>
+                Neaktivan
+            </span>
+        </h1>
+        <div>
+            <a th:href="@{'/users/' + ${user.id} + '/edit'}" class="btn btn-primary">
+                <i class="bi bi-pencil"></i>
+                Uredi
+            </a>
+            <a href="/users" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i>
+                Povratak
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- User Information -->
+        <div class="col-md-8">
+            <div class="card shadow mb-4">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="bi bi-person-circle"></i>
+                        Osnovne Informacije
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label text-muted">Korisničko ime</label>
+                                <div class="fw-bold" th:text="${user.username}">username</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label text-muted">Email adresa</label>
+                                <div>
+                                    <a th:if="${user.email}" th:href="'mailto:' + ${user.email}" th:text="${user.email}">email@example.com</a>
+                                    <span th:unless="${user.email}" class="text-muted">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label text-muted">Ime</label>
+                                <div th:text="${user.firstName}">Ime</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label text-muted">Prezime</label>
+                                <div th:text="${user.lastName}">Prezime</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label text-muted">Broj telefona</label>
+                                <div>
+                                    <span th:if="${user.phoneNumber}" th:text="${user.phoneNumber}">+385 98 123 456</span>
+                                    <span th:unless="${user.phoneNumber}" class="text-muted">-</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label text-muted">Adresa</label>
+                                <div>
+                                    <span th:if="${user.address}" th:text="${user.address}">Adresa</span>
+                                    <span th:unless="${user.address}" class="text-muted">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Water Meter Information -->
+            <div th:if="${user.meterNumber}" class="card shadow mb-4">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-info">
+                        <i class="bi bi-droplet"></i>
+                        Vodovod
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label text-muted">Broj vodomjera</label>
+                                <div class="fw-bold text-info" th:text="${user.meterNumber}">VM001</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label text-muted">Status</label>
+                                <div>
+                                    <span class="badge bg-success">
+                                        <i class="bi bi-check-circle"></i>
+                                        Aktivan
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Actions for Water User -->
+                    <div class="mt-3">
+                        <h6>Brze akcije:</h6>
+                        <div class="btn-group">
+                            <a href="#" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-clipboard-data"></i>
+                                Novo očitanje
+                            </a>
+                            <a href="#" class="btn btn-sm btn-outline-success">
+                                <i class="bi bi-receipt"></i>
+                                Generiraj račun
+                            </a>
+                            <a href="#" class="btn btn-sm btn-outline-info">
+                                <i class="bi bi-graph-up"></i>
+                                Povijest očitanja
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Information -->
+        <div class="col-md-4">
+            <div class="card shadow mb-4">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-secondary">
+                        <i class="bi bi-gear"></i>
+                        Sistemske Informacije
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Rola</label>
+                        <div>
+                            <span th:if="${user.role.name() == 'ADMIN'}" class="badge bg-danger">
+                                <i class="bi bi-shield-check"></i>
+                                <span th:text="${user.role.displayName}">Administrator</span>
+                            </span>
+                            <span th:if="${user.role.name() == 'USER'}" class="badge bg-primary">
+                                <i class="bi bi-person"></i>
+                                <span th:text="${user.role.displayName}">Korisnik</span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Status</label>
+                        <div>
+                            <span th:if="${user.enabled}" class="badge bg-success">
+                                <i class="bi bi-check-circle"></i>
+                                Aktivan
+                            </span>
+                            <span th:unless="${user.enabled}" class="badge bg-secondary">
+                                <i class="bi bi-x-circle"></i>
+                                Neaktivan
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Datum kreiranja</label>
+                        <div th:text="${#temporals.format(user.createdAt, 'dd.MM.yyyy HH:mm')}">01.01.2024 10:00</div>
+                    </div>
+
+                    <div th:if="${user.lastLogin}" class="mb-3">
+                        <label class="form-label text-muted">Zadnja prijava</label>
+                        <div th:text="${#temporals.format(user.lastLogin, 'dd.MM.yyyy HH:mm')}">01.01.2024 15:30</div>
+                    </div>
+
+                    <div th:unless="${user.lastLogin}" class="mb-3">
+                        <label class="form-label text-muted">Zadnja prijava</label>
+                        <div class="text-muted">Nikada se nije prijavljivao</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="card shadow">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-warning">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        Akcije
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a th:href="@{'/users/' + ${user.id} + '/edit'}" class="btn btn-primary">
+                            <i class="bi bi-pencil"></i>
+                            Uredi korisnika
+                        </a>
+                        
+                        <form th:if="${user.enabled}" th:action="@{'/users/' + ${user.id} + '/delete'}" method="post"
+                              onsubmit="return confirm('Jeste li sigurni da želite onemogućiti ovog korisnika?')">
+                            <button type="submit" class="btn btn-warning w-100">
+                                <i class="bi bi-x-circle"></i>
+                                Onemogući korisnika
+                            </button>
+                        </form>
+                        
+                        <form th:unless="${user.enabled}" th:action="@{'/users/' + ${user.id} + '/enable'}" method="post">
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="bi bi-check-circle"></i>
+                                Omogući korisnika
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
