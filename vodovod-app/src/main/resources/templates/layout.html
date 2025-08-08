@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${title}">Vodovod</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
+</head>
+<body>
+<div class="container">
+    <nav class="sidebar">
+        <ul>
+            <li><a th:href="@{/}" th:text="'Pregled'"></a></li>
+            <li><a th:href="@{/korisnici}" th:text="'Korisnici'"></a></li>
+            <li><a th:href="@{/ocitanja}" th:text="'Očitanja'"></a></li>
+            <li><a th:href="@{/racuni}" th:text="'Računi'"></a></li>
+            <li><a th:href="@{/uplate}" th:text="'Uplate'"></a></li>
+            <li><a th:href="@{/admin}" th:text="'Admin panel'"></a></li>
+            <li><a th:href="@{/logout}" th:text="'Odjava'"></a></li>
+        </ul>
+    </nav>
+    <main class="main-content">
+        <div th:replace="~{::body}"></div>
+    </main>
+</div>
+</body>
+</html>
