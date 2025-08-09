@@ -19,7 +19,7 @@
                                 Aktivni Korisnici
                             </div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800" 
-                                 th:text="${stats.activeUsers} + ' / ' + ${stats.totalUsers}">0 / 0</div>
+                                 th:text="${stats.activeUsers + ' / ' + stats.totalUsers}">0 / 0</div>
                         </div>
                         <div class="col-auto">
                             <i class="bi bi-people fs-2 text-primary"></i>
@@ -39,7 +39,7 @@
                                 Plaćeni Računi
                             </div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800" 
-                                 th:text="${stats.paidBills} + ' / ' + ${stats.totalBills}">0 / 0</div>
+                                 th:text="${stats.paidBills + ' / ' + stats.totalBills}">0 / 0</div>
                         </div>
                         <div class="col-auto">
                             <i class="bi bi-receipt fs-2 text-success"></i>
