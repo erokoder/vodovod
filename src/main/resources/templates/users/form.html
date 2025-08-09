@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="hr" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main}">
+<head>
+    <title>Korisnik</title>
+</head>
+<body>
+<div th:block="layout:fragment='content'">
+    <!-- Navigation -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/dashboard">Pregled</a></li>
+            <li class="breadcrumb-item"><a href="/users">Korisnici</a></li>
+            <li class="breadcrumb-item active" th:text="${user.id != null ? 'Uredi Korisnika' : 'Novi Korisnik'}">Novi Korisnik</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="bi bi-person"></i>
+                        <span th:text="${user.id != null ? 'Uredi Korisnika' : 'Novi Korisnik'}">Novi Korisnik</span>
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form th:action="${user.id != null ? '/users/' + user.id + '/edit' : '/users/new'}" 
+                          th:object="${user}" method="post">
+                        
+                        <!-- Basic Information -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="username" class="form-label">Korisničko ime *</label>
+                                    <input type="text" class="form-control" id="username" th:field="*{username}" required>
+                                    <div th:if="${#fields.hasErrors('username')}" class="text-danger">
+                                        <small th:errors="*{username}">Username error</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email adresa *</label>
+                                    <input type="email" class="form-control" id="email" th:field="*{email}" required>
+                                    <div th:if="${#fields.hasErrors('email')}" class="text-danger">
+                                        <small th:errors="*{email}">Email error</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="firstName" class="form-label">Ime *</label>
+                                    <input type="text" class="form-control" id="firstName" th:field="*{firstName}" required>
+                                    <div th:if="${#fields.hasErrors('firstName')}" class="text-danger">
+                                        <small th:errors="*{firstName}">First name error</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="lastName" class="form-label">Prezime *</label>
+                                    <input type="text" class="form-control" id="lastName" th:field="*{lastName}" required>
+                                    <div th:if="${#fields.hasErrors('lastName')}" class="text-danger">
+                                        <small th:errors="*{lastName}">Last name error</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Contact Information -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="phoneNumber" class="form-label">Broj telefona</label>
+                                    <input type="tel" class="form-control" id="phoneNumber" th:field="*{phoneNumber}">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="address" class="form-label">Adresa</label>
+                                    <input type="text" class="form-control" id="address" th:field="*{address}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- System Information -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="role" class="form-label">Rola *</label>
+                                    <select class="form-select" id="role" th:field="*{role}" required>
+                                        <option value="">Odaberite rolu...</option>
+                                        <option th:each="roleOption : ${roles}" 
+                                                th:value="${roleOption}" 
+                                                th:text="${roleOption.displayName}"
+                                                th:selected="${roleOption == user.role}">Rola</option>
+                                    </select>
+                                    <div th:if="${#fields.hasErrors('role')}" class="text-danger">
+                                        <small th:errors="*{role}">Role error</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="meterNumber" class="form-label">Broj vodomjera</label>
+                                    <input type="text" class="form-control" id="meterNumber" th:field="*{meterNumber}">
+                                    <div class="form-text">Ostavite prazno ako korisnik nema vodomjer</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Password Information -->
+                        <div th:if="${user.id == null}" class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="password" class="form-label">Lozinka</label>
+                                    <input type="password" class="form-control" id="password" th:field="*{password}">
+                                    <div class="form-text">Ostavite prazno za automatsko generiranje lozinke</div>
+                                    <div th:if="${#fields.hasErrors('password')}" class="text-danger">
+                                        <small th:errors="*{password}">Password error</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div th:if="${user.id != null}" class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="password" class="form-label">Nova lozinka</label>
+                                    <input type="password" class="form-control" id="password" th:field="*{password}">
+                                    <div class="form-text">Ostavite prazno ako ne želite mijenjati lozinku</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <div class="form-check mt-4">
+                                        <input class="form-check-input" type="checkbox" id="enabled" th:field="*{enabled}">
+                                        <label class="form-check-label" for="enabled">
+                                            Korisnik je aktivan
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="row">
+                            <div class="col-12">
+                                <hr>
+                                <div class="d-flex justify-content-between">
+                                    <a href="/users" class="btn btn-secondary">
+                                        <i class="bi bi-arrow-left"></i>
+                                        Povratak
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-check"></i>
+                                        <span th:text="${user.id != null ? 'Ažuriraj' : 'Kreiraj'}">Kreiraj</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Help Panel -->
+        <div class="col-md-4">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-info">
+                        <i class="bi bi-info-circle"></i>
+                        Pomoć
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <h6>Tipovi korisnika:</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <span class="badge bg-danger">Administrator</span>
+                            <small class="d-block text-muted">Potpun pristup sustavu</small>
+                        </li>
+                        <li class="mb-2">
+                            <span class="badge bg-primary">Korisnik</span>
+                            <small class="d-block text-muted">Može pregledavati svoje račune</small>
+                        </li>
+                    </ul>
+
+                    <hr>
+
+                    <h6>Napomene:</h6>
+                    <ul class="small text-muted">
+                        <li>Polja označena sa * su obavezna</li>
+                        <li>Administrator može biti i korisnik vodovoda ako ima broj vodomjera</li>
+                        <li>Broj vodomjera mora biti jedinstven</li>
+                        <li th:if="${user.id == null}">Ako ne unesete lozinku, sustav će je automatski generirati</li>
+                        <li th:if="${user.id != null}">Ostavite polje lozinke prazno ako je ne želite mijenjati</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="hr" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main}">
+<head>
+    <title>Korisnici</title>
+</head>
+<body>
+<div th:block="layout:fragment='content'">
+    <!-- Page Actions -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="h3 mb-0">Korisnici</h1>
+        <a href="/users/new" class="btn btn-primary">
+            <i class="bi bi-person-plus"></i>
+            Dodaj Korisnika
+        </a>
+    </div>
+
+    <!-- Users Table -->
+    <div class="card shadow">
+        <div class="card-header">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="bi bi-people"></i>
+                Popis Korisnika
+            </h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Korisničko ime</th>
+                            <th>Ime i prezime</th>
+                            <th>Email</th>
+                            <th>Broj vodomjera</th>
+                            <th>Rola</th>
+                            <th>Status</th>
+                            <th>Datum kreiranja</th>
+                            <th>Akcije</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${#lists.isEmpty(users)}">
+                            <td colspan="9" class="text-center text-muted">
+                                <i class="bi bi-inbox"></i>
+                                Nema korisnika u sustavu.
+                            </td>
+                        </tr>
+                        <tr th:each="user : ${users}">
+                            <td th:text="${user.id}">#1</td>
+                            <td>
+                                <strong th:text="${user.username}">username</strong>
+                            </td>
+                            <td th:text="${user.fullName}">Ime Prezime</td>
+                            <td>
+                                <a th:if="${user.email}" th:href="'mailto:' + ${user.email}" th:text="${user.email}">email@example.com</a>
+                                <span th:unless="${user.email}" class="text-muted">-</span>
+                            </td>
+                            <td>
+                                <span th:if="${user.meterNumber}" class="badge bg-info" th:text="${user.meterNumber}">VM001</span>
+                                <span th:unless="${user.meterNumber}" class="text-muted">-</span>
+                            </td>
+                            <td>
+                                <span th:if="${user.role.name() == 'ADMIN'}" class="badge bg-danger">
+                                    <i class="bi bi-shield-check"></i>
+                                    <span th:text="${user.role.displayName}">Admin</span>
+                                </span>
+                                <span th:if="${user.role.name() == 'USER'}" class="badge bg-primary">
+                                    <i class="bi bi-person"></i>
+                                    <span th:text="${user.role.displayName}">Korisnik</span>
+                                </span>
+                            </td>
+                            <td>
+                                <span th:if="${user.enabled}" class="badge bg-success">
+                                    <i class="bi bi-check-circle"></i>
+                                    Aktivan
+                                </span>
+                                <span th:unless="${user.enabled}" class="badge bg-secondary">
+                                    <i class="bi bi-x-circle"></i>
+                                    Neaktivan
+                                </span>
+                            </td>
+                            <td th:text="${#temporals.format(user.createdAt, 'dd.MM.yyyy HH:mm')}">01.01.2024 10:00</td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a th:href="@{'/users/' + ${user.id}}" class="btn btn-sm btn-outline-info" title="Pregled">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a th:href="@{'/users/' + ${user.id} + '/edit'}" class="btn btn-sm btn-outline-primary" title="Uredi">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <div class="btn-group" role="group">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" 
+                                                data-bs-toggle="dropdown" aria-expanded="false" title="Više opcija">
+                                            <i class="bi bi-three-dots"></i>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li th:if="${user.enabled}">
+                                                <form th:action="@{'/users/' + ${user.id} + '/delete'}" method="post" class="d-inline"
+                                                      onsubmit="return confirm('Jeste li sigurni da želite onemogućiti ovog korisnika?')">
+                                                    <button type="submit" class="dropdown-item text-warning">
+                                                        <i class="bi bi-x-circle"></i>
+                                                        Onemogući
+                                                    </button>
+                                                </form>
+                                            </li>
+                                            <li th:unless="${user.enabled}">
+                                                <form th:action="@{'/users/' + ${user.id} + '/enable'}" method="post" class="d-inline">
+                                                    <button type="submit" class="dropdown-item text-success">
+                                                        <i class="bi bi-check-circle"></i>
+                                                        Omogući
+                                                    </button>
+                                                </form>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">Ukupno korisnika</h5>
+                            <h2 th:text="${#lists.size(users)}">0</h2>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-people fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">Aktivni korisnici</h5>
+                            <h2 th:text="${#lists.size(users.?[enabled])}">0</h2>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-person-check fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">Korisnici s vodomjerima</h5>
+                            <h2 th:text="${#lists.size(users.?[meterNumber != null and meterNumber != ''])}">0</h2>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-droplet fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
