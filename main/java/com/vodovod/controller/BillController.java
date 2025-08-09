@@ -7,14 +7,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
-@RequestMapping("/admin/readings")
+@RequestMapping("/admin/bills")
 @PreAuthorize("hasRole('ADMIN')")
-public class ReadingController {
+public class BillController {
 
     @GetMapping
     public String list(Model model) {
-        model.addAttribute("pageTitle", "Očitanja");
-        model.addAttribute("activeMenu", "readings");
-        return "readings/list";
+        model.addAttribute("pageTitle", "Računi");
+        model.addAttribute("activeMenu", "bills");
+        return "bills/list";
     }
 }
