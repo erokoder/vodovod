@@ -6,12 +6,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
-@RequestMapping("/settings")
-public class SettingsController {
+@RequestMapping("/bills")
+public class BillsController {
 
     @GetMapping
     public String index(Model model) {
-        model.addAttribute("pageTitle", "Postavke");
-        return "settings/index";
+        model.addAttribute("pageTitle", "Računi");
+        return "bills/index";
     }
 }
