@@ -1,5 +1,0 @@
--- Inicijalni admin korisnik se dodaje ručno (nema registracije)
--- Primjer (unesite hash lozinke koju dobijete iz BCrypt-a):
--- INSERT INTO users (id, username, password_hash, full_name, email, water_meter_number, enabled)
--- VALUES (1, 'admin', '{bcrypt_hash}', 'Administrator', 'admin@example.com', null, true);
--- INSERT INTO user_roles (user_id, role) VALUES (1, 'ADMIN');
