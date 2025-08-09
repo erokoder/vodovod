@@ -262,15 +262,15 @@ body {
     .sidebar {
         margin-left: calc(-1 * var(--sidebar-width));
     }
-    
+
     .sidebar.active {
         margin-left: 0;
     }
-    
+
     #content {
         margin-left: 0;
     }
-    
+
     #content.active {
         margin-left: var(--sidebar-width);
     }
