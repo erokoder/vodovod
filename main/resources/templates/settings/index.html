@@ -1,113 +1,16 @@
 <!DOCTYPE html>
-<html lang="hr" xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout/main}">
+<html lang="hr" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/main}">
 <head>
-    <title>Postavke</title>
+    <title th:text="${pageTitle}">Admin Panel</title>
 </head>
 <body>
 <div layout:fragment="content">
-    <!-- Page Heading -->
-    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Postavke</h1>
-    </div>
-
-    <!-- Content Row -->
-    <div class="row">
-        <!-- Opće postavke -->
-        <div class="col-lg-6">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Opće postavke</h6>
-                </div>
-                <div class="card-body">
-                    <form>
-                        <div class="form-group">
-                            <label for="companyName">Naziv tvrtke</label>
-                            <input type="text" class="form-control" id="companyName" value="Vodovod d.o.o.">
-                        </div>
-                        <div class="form-group">
-                            <label for="address">Adresa</label>
-                            <input type="text" class="form-control" id="address" value="Ulica 123, 10000 Zagreb">
-                        </div>
-                        <div class="form-group">
-                            <label for="phone">Telefon</label>
-                            <input type="text" class="form-control" id="phone" value="+385 1 234 5678">
-                        </div>
-                        <div class="form-group">
-                            <label for="email">Email</label>
-                            <input type="email" class="form-control" id="email" value="info@vodovod.hr">
-                        </div>
-                        <button type="submit" class="btn btn-primary">Spremi postavke</button>
-                    </form>
-                </div>
-            </div>
+    <div class="card">
+        <div class="card-header">
+            Postavke sustava
         </div>
-
-        <!-- Postavke cijena -->
-        <div class="col-lg-6">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Postavke cijena</h6>
-                </div>
-                <div class="card-body">
-                    <form>
-                        <div class="form-group">
-                            <label for="waterPrice">Cijena vode (kn/m³)</label>
-                            <input type="number" class="form-control" id="waterPrice" value="5.50" step="0.01">
-                        </div>
-                        <div class="form-group">
-                            <label for="sewagePrice">Cijena odvodnje (kn/m³)</label>
-                            <input type="number" class="form-control" id="sewagePrice" value="3.50" step="0.01">
-                        </div>
-                        <div class="form-group">
-                            <label for="fixedFee">Fiksna naknada (kn)</label>
-                            <input type="number" class="form-control" id="fixedFee" value="15.00" step="0.01">
-                        </div>
-                        <div class="form-group">
-                            <label for="vat">PDV (%)</label>
-                            <input type="number" class="form-control" id="vat" value="25" step="1">
-                        </div>
-                        <button type="submit" class="btn btn-primary">Spremi cijene</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Ostale postavke -->
-    <div class="row">
-        <div class="col-lg-12">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Ostale postavke</h6>
-                </div>
-                <div class="card-body">
-                    <form>
-                        <div class="form-group">
-                            <label for="paymentDeadline">Rok plaćanja (dana)</label>
-                            <input type="number" class="form-control" id="paymentDeadline" value="15">
-                        </div>
-                        <div class="form-group">
-                            <label for="reminderDays">Podsjetnik prije isteka (dana)</label>
-                            <input type="number" class="form-control" id="reminderDays" value="5">
-                        </div>
-                        <div class="form-check">
-                            <input type="checkbox" class="form-check-input" id="autoGenerateBills" checked>
-                            <label class="form-check-label" for="autoGenerateBills">
-                                Automatski generiraj račune
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            <input type="checkbox" class="form-check-input" id="sendEmailNotifications" checked>
-                            <label class="form-check-label" for="sendEmailNotifications">
-                                Šalji email obavijesti
-                            </label>
-                        </div>
-                        <button type="submit" class="btn btn-primary mt-3">Spremi postavke</button>
-                    </form>
-                </div>
-            </div>
+        <div class="card-body">
+            <p class="text-muted mb-0">Stranica je u pripremi.</p>
         </div>
     </div>
 </div>

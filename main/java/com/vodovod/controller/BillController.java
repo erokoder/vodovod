@@ -12,18 +12,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class BillController {
 
     @GetMapping
-    public String listBills(Model model) {
+    public String list(Model model) {
         model.addAttribute("pageTitle", "Računi");
         model.addAttribute("activeMenu", "bills");
-        
         return "bills/list";
-    }
-
-    @GetMapping("/new")
-    public String newBillForm(Model model) {
-        model.addAttribute("pageTitle", "Novi Račun");
-        model.addAttribute("activeMenu", "bills");
-        
-        return "bills/form";
     }
 }

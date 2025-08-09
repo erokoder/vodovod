@@ -1,52 +1,18 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" 
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout/main}">
-
+<html lang="hr" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/main}">
+<head>
+    <title th:text="${pageTitle}">Očitanja</title>
+</head>
+<body>
 <div layout:fragment="content">
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h3 class="card-title">Očitanja</h3>
-                        <a href="/readings/new" class="btn btn-primary">
-                            <i class="bi bi-plus-circle"></i> Novo Očitanje
-                        </a>
-                    </div>
-                    <div class="card-body">
-                        <div class="alert alert-info">
-                            <i class="bi bi-info-circle"></i>
-                            Funkcionalnost za upravljanje očitanjima će biti implementirana uskoro.
-                        </div>
-                        
-                        <!-- Placeholder for readings table -->
-                        <div class="table-responsive">
-                            <table class="table table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>Datum</th>
-                                        <th>Korisnik</th>
-                                        <th>Prethodno Stanje</th>
-                                        <th>Novo Stanje</th>
-                                        <th>Potrošnja</th>
-                                        <th>Akcije</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td colspan="6" class="text-center text-muted">
-                                            Nema podataka za prikaz
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <div class="card">
+        <div class="card-header">
+            Očitanja
+        </div>
+        <div class="card-body">
+            <p class="text-muted mb-0">Stranica je u pripremi.</p>
         </div>
     </div>
 </div>
-
+</body>
 </html>

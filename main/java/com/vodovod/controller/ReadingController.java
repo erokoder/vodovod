@@ -12,18 +12,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class ReadingController {
 
     @GetMapping
-    public String listReadings(Model model) {
+    public String list(Model model) {
         model.addAttribute("pageTitle", "Očitanja");
         model.addAttribute("activeMenu", "readings");
-        
         return "readings/list";
-    }
-
-    @GetMapping("/new")
-    public String newReadingForm(Model model) {
-        model.addAttribute("pageTitle", "Novo Očitanje");
-        model.addAttribute("activeMenu", "readings");
-        
-        return "readings/form";
     }
 }

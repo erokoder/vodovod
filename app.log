@@ -1,0 +1,38 @@
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.0)
+
+2025-08-09T09:18:01.593Z  INFO 4092 --- [           main] c.vodovod.VodovodManagementApplication   : Starting VodovodManagementApplication v0.0.1-SNAPSHOT using Java 21.0.7 with PID 4092 (/workspace/target/vodovod-management-0.0.1-SNAPSHOT.jar started by ubuntu in /workspace)
+2025-08-09T09:18:01.595Z DEBUG 4092 --- [           main] c.vodovod.VodovodManagementApplication   : Running with Spring Boot v3.2.0, Spring v6.1.1
+2025-08-09T09:18:01.595Z  INFO 4092 --- [           main] c.vodovod.VodovodManagementApplication   : No active profile set, falling back to 1 default profile: "default"
+2025-08-09T09:18:02.372Z  INFO 4092 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-08-09T09:18:02.410Z  INFO 4092 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 33 ms. Found 5 JPA repository interfaces.
+2025-08-09T09:18:02.743Z  INFO 4092 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2025-08-09T09:18:02.750Z  INFO 4092 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-08-09T09:18:02.750Z  INFO 4092 --- [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.16]
+2025-08-09T09:18:02.769Z  INFO 4092 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-08-09T09:18:02.770Z  INFO 4092 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 861 ms
+2025-08-09T09:18:02.787Z  INFO 4092 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2025-08-09T09:18:02.968Z  INFO 4092 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:file:./data/vodovod user=SA
+2025-08-09T09:18:02.969Z  INFO 4092 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2025-08-09T09:18:02.975Z  INFO 4092 --- [           main] o.s.b.a.h2.H2ConsoleAutoConfiguration    : H2 console available at '/h2-console'. Database available at 'jdbc:h2:file:./data/vodovod'
+2025-08-09T09:18:03.055Z  INFO 4092 --- [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-08-09T09:18:03.085Z  INFO 4092 --- [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.3.1.Final
+2025-08-09T09:18:03.104Z  INFO 4092 --- [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2025-08-09T09:18:03.229Z  INFO 4092 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-08-09T09:18:03.253Z  WARN 4092 --- [           main] org.hibernate.orm.deprecation            : HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-08-09T09:18:03.830Z  INFO 4092 --- [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-08-09T09:18:03.862Z  INFO 4092 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-08-09T09:18:04.029Z  INFO 4092 --- [           main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2025-08-09T09:18:04.448Z  WARN 4092 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-08-09T09:18:04.608Z  INFO 4092 --- [           main] o.s.s.web.DefaultSecurityFilterChain     : Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@6f5690f3, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@160a8986, org.springframework.security.web.context.SecurityContextHolderFilter@43b45e77, org.springframework.security.web.header.HeaderWriterFilter@585d570e, org.springframework.web.filter.CorsFilter@11ed241c, org.springframework.security.web.csrf.CsrfFilter@350a3df3, org.springframework.security.web.authentication.logout.LogoutFilter@7be29ac4, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter@57e351a, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@26c9225a, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@10ba757f, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@2f24e1f3, org.springframework.security.web.access.ExceptionTranslationFilter@31b846f, org.springframework.security.web.access.intercept.AuthorizationFilter@61774805]
+2025-08-09T09:18:04.769Z  INFO 4092 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path ''
+2025-08-09T09:18:04.776Z  INFO 4092 --- [           main] c.vodovod.VodovodManagementApplication   : Started VodovodManagementApplication in 3.485 seconds (process running for 3.807)
+Hibernate: select u1_0.id from users u1_0 where u1_0.username=? fetch first ? rows only
+Hibernate: select ss1_0.id,ss1_0.account_number,ss1_0.bill_due_days,ss1_0.company_address,ss1_0.company_email,ss1_0.company_name,ss1_0.company_phone,ss1_0.fixed_fee,ss1_0.updated_at,ss1_0.updated_by,ss1_0.use_fixed_fee,ss1_0.water_price_per_m3 from system_settings ss1_0 order by ss1_0.id fetch first 1 rows only
+Hibernate: select u1_0.id from users u1_0 where u1_0.username=? fetch first ? rows only
