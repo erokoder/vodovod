@@ -7,6 +7,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${pageTitle} + ' - Vodovod Management'">Vodovod Management</title>
     
+    <!-- CSRF Meta -->
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+    
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
@@ -195,9 +199,25 @@
         </div>
     </div>
 
+        <!-- jQuery (required for features on some pages) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // Setup CSRF header for all AJAX requests
+      (function() {
+        var token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        var header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+        if (window.jQuery && token && header) {
+          $.ajaxSetup({
+            beforeSend: function(xhr) {
+              xhr.setRequestHeader(header, token);
+            }
+          });
+        }
+      })();
+    </script>
     <!-- Custom JS -->
     <div layout:fragment="scripts"></div>
-</body>
+  </body>
 </html>

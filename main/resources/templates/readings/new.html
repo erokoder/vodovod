@@ -28,7 +28,7 @@
                     <h6 class="m-0 font-weight-bold text-primary">Unos novog očitanja</h6>
                 </div>
                 <div class="card-body">
-                    <form id="newReadingForm" method="post" action="/readings/new" th:object="${newReadingDTO}">
+                    <form id="newReadingForm" method="post" th:action="@{/readings/new}" th:object="${newReadingDTO}">
                         <div class="form-group">
                             <label for="userId">Korisnik</label>
                             <select class="form-control" id="userId" name="userId" th:field="*{userId}" required>
@@ -76,6 +76,7 @@
                             <label for="notes">Napomene</label>
                             <textarea class="form-control" id="notes" name="notes" th:field="*{notes}" rows="3"></textarea>
                         </div>
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                         <button type="submit" class="btn btn-primary" id="submitBtn">Spremi očitanje</button>
                         <a href="/readings" class="btn btn-secondary">Odustani</a>
                     </form>
