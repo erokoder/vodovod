@@ -37,6 +37,14 @@ public class UserService {
         return userRepository.findById(id);
     }
 
+    public Optional<User> findById(Long id) {
+        return userRepository.findById(id);
+    }
+
+    public List<User> findByRoleAndEnabledTrue(Role role) {
+        return userRepository.findByRoleAndEnabledTrue(role);
+    }
+
     public Optional<User> getUserByUsername(String username) {
         return userRepository.findByUsername(username);
     }
