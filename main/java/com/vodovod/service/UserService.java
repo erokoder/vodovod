@@ -21,6 +21,9 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private DashboardService dashboardService;
+
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
@@ -58,7 +61,12 @@ public class UserService {
         if (user.getPassword() != null && !user.getPassword().startsWith("$2a$")) {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
         }
-        return userRepository.save(user);
+        User savedUser = userRepository.save(user);
+        
+        // Osvježi dashboard statistike
+        dashboardService.refreshDashboardStats();
+        
+        return savedUser;
     }
 
     public User createUser(User user) {
@@ -125,14 +133,14 @@ public class UserService {
         
         // Onemogući korisnika umjesto brisanja (soft delete)
         user.setEnabled(false);
-        userRepository.save(user);
+        saveUser(user);
     }
 
     public void enableUser(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Korisnik nije pronađen"));
         user.setEnabled(true);
-        userRepository.save(user);
+        saveUser(user);
     }
 
     public boolean usernameExists(String username) {

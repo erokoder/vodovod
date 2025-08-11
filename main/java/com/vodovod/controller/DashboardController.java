@@ -17,7 +17,7 @@ public class DashboardController {
     @GetMapping("/dashboard")
     @PreAuthorize("hasRole('ADMIN')")
     public String dashboard(Model model) {
-        DashboardStats stats = dashboardService.getDashboardStats();
+        DashboardStats stats = dashboardService.autoRefreshDashboardStatsOnAccess();
         
         model.addAttribute("pageTitle", "Pregled");
         model.addAttribute("activeMenu", "dashboard");

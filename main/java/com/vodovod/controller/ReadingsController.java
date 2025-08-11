@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import com.vodovod.service.DashboardService;
 
 @Controller
 @RequestMapping("/readings")
@@ -33,9 +34,20 @@ public class ReadingsController {
     @Autowired
     private MeterReadingService meterReadingService;
 
+    @Autowired
+    private DashboardService dashboardService;
+
     @GetMapping
     public String index(Model model) {
         model.addAttribute("pageTitle", "Očitanja");
+        
+        // Dohvati sva očitanja s potrošnjom
+        List<MeterReading> allReadings = meterReadingService.getAllReadingsWithConsumption();
+        model.addAttribute("readings", allReadings);
+        
+        // Osvježi dashboard statistike
+        dashboardService.refreshDashboardStats();
+        
         return "readings/index";
     }
     
@@ -47,6 +59,9 @@ public class ReadingsController {
         // Dodaj listu korisnika za dropdown
         List<User> users = userService.findByRoleAndEnabledTrue(Role.USER);
         model.addAttribute("users", users);
+        
+        // Osvježi dashboard statistike
+        dashboardService.refreshDashboardStats();
         
         return "readings/new";
     }
@@ -89,10 +104,14 @@ public class ReadingsController {
             reading.setNotes(newReadingDTO.getNotes());
             reading.setCreatedBy(authentication.getName());
 
-            // Spremi očitanje
-            meterReadingService.saveReading(reading);
+            // Spremi očitanje i izračunaj potrošnju
+            MeterReading savedReading = meterReadingService.saveReading(reading);
 
-            redirectAttributes.addFlashAttribute("successMessage", "Očitanje je uspješno spremljeno!");
+            // Osvježi dashboard statistike
+            dashboardService.refreshDashboardStats();
+
+            redirectAttributes.addFlashAttribute("successMessage", 
+                "Očitanje je uspješno spremljeno! Potrošnja: " + savedReading.getConsumption() + " m³");
             return "redirect:/readings";
 
         } catch (Exception e) {

@@ -7,6 +7,14 @@
 </head>
 <body>
 <div layout:fragment="content">
+    <!-- Success/Error Messages -->
+    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <span th:text="${successMessage}"></span>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+
     <!-- Page Heading -->
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800">Očitanja</h1>
@@ -30,15 +38,35 @@
                                     <th>ID</th>
                                     <th>Korisnik</th>
                                     <th>Datum očitanja</th>
-                                    <th>Prethodno stanje</th>
-                                    <th>Novo stanje</th>
-                                    <th>Potrošnja</th>
-                                    <th>Akcije</th>
+                                    <th>Prethodno stanje (m³)</th>
+                                    <th>Novo stanje (m³)</th>
+                                    <th>Potrošnja (m³)</th>
+                                    <th>Napomene</th>
+                                    <th>Kreirao</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td colspan="7" class="text-center">Nema podataka za prikaz</td>
+                                <tr th:if="${#lists.isEmpty(readings)}">
+                                    <td colspan="8" class="text-center text-muted">
+                                        <i class="bi bi-inbox"></i>
+                                        Nema očitanja za prikaz
+                                    </td>
+                                </tr>
+                                <tr th:each="reading : ${readings}">
+                                    <td th:text="${reading.id}">#1</td>
+                                    <td>
+                                        <strong th:text="${reading.user.fullName}">Ime Prezime</strong>
+                                        <br>
+                                        <small class="text-muted" th:text="'VM: ' + ${reading.user.meterNumber}">VM001</small>
+                                    </td>
+                                    <td th:text="${#temporals.format(reading.readingDate, 'dd.MM.yyyy')}">01.01.2024</td>
+                                    <td th:text="${#numbers.formatDecimal(reading.previousReadingValue, 1, 3)}">0.000</td>
+                                    <td th:text="${#numbers.formatDecimal(reading.readingValue, 1, 3)}">0.000</td>
+                                    <td>
+                                        <span class="badge bg-info" th:text="${#numbers.formatDecimal(reading.consumption, 1, 3) + ' m³'}">0.000 m³</span>
+                                    </td>
+                                    <td th:text="${reading.notes}">-</td>
+                                    <td th:text="${reading.createdBy}">admin</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -47,6 +75,66 @@
             </div>
         </div>
     </div>
+
+    <!-- Summary Cards -->
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">Ukupno očitanja</h5>
+                            <h2 th:text="${#lists.size(readings)}">0</h2>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-clipboard-data fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">Ukupna potrošnja</h5>
+                            <h2 th:text="${#numbers.formatDecimal(#aggregates.sum(readings.![consumption]), 1, 3) + ' m³'}">0.000 m³</h2>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-droplet fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">Prosječna potrošnja</h5>
+                            <h2 th:text="${#lists.isEmpty(readings) ? '0.000' : #numbers.formatDecimal(#aggregates.sum(readings.![consumption]) / #lists.size(readings), 1, 3) + ' m³'}">0.000 m³</h2>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-graph-up fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div layout:fragment="scripts">
+<script>
+$(document).ready(function() {
+    // Auto-hide success messages after 5 seconds
+    setTimeout(function() {
+        $('.alert-success').fadeOut('slow');
+    }, 5000);
+});
+</script>
 </div>
 </body>
 </html>

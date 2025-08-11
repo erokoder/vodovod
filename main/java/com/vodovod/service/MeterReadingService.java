@@ -19,6 +19,9 @@ public class MeterReadingService {
     @Autowired
     private MeterReadingRepository meterReadingRepository;
 
+    @Autowired
+    private DashboardService dashboardService;
+
     /**
      * Sprema novo očitanje vodomjera
      */
@@ -35,21 +38,37 @@ public class MeterReadingService {
         // Izračunaj potrošnju
         reading.calculateConsumption();
         
-        return meterReadingRepository.save(reading);
+        // Spremi očitanje
+        MeterReading savedReading = meterReadingRepository.save(reading);
+        
+        // Osvježi dashboard statistike
+        dashboardService.refreshDashboardStats();
+        
+        return savedReading;
     }
 
     /**
      * Dohvaća najnovije očitanje za korisnika
      */
     public Optional<MeterReading> getLatestReadingByUser(User user) {
-        return meterReadingRepository.findLatestByUser(user);
+        Optional<MeterReading> reading = meterReadingRepository.findLatestByUser(user);
+        
+        // Osvježi dashboard statistike
+        dashboardService.refreshDashboardStats();
+        
+        return reading;
     }
 
     /**
      * Dohvaća sva očitanja za korisnika sortirana po datumu
      */
     public List<MeterReading> getReadingsByUser(User user) {
-        return meterReadingRepository.findByUserOrderByReadingDateDesc(user);
+        List<MeterReading> readings = meterReadingRepository.findByUserOrderByReadingDateDesc(user);
+        
+        // Osvježi dashboard statistike
+        dashboardService.refreshDashboardStats();
+        
+        return readings;
     }
 
     /**
@@ -90,13 +109,54 @@ public class MeterReadingService {
      * Dohvaća sva očitanja sortirana po datumu
      */
     public List<MeterReading> getAllReadings() {
-        return meterReadingRepository.findAll();
+        List<MeterReading> readings = meterReadingRepository.findAll();
+        
+        // Osvježi dashboard statistike
+        dashboardService.refreshDashboardStats();
+        
+        return readings;
+    }
+
+    /**
+     * Dohvaća sva očitanja s potrošnjom sortirana po datumu
+     */
+    public List<MeterReading> getAllReadingsWithConsumption() {
+        List<MeterReading> readings = meterReadingRepository.findAllByOrderByReadingDateDesc();
+        
+        // Osiguraj da je potrošnja izračunata za sva očitanja
+        for (MeterReading reading : readings) {
+            if (reading.getConsumption() == null) {
+                reading.calculateConsumption();
+            }
+        }
+        
+        // Osvježi dashboard statistike
+        dashboardService.refreshDashboardStats();
+        
+        return readings;
     }
 
     /**
      * Dohvaća očitanja bez generiranih računa
      */
     public List<MeterReading> getReadingsWithoutBill() {
-        return meterReadingRepository.findReadingsWithoutBill();
+        List<MeterReading> readings = meterReadingRepository.findReadingsWithoutBill();
+        
+        // Osvježi dashboard statistike
+        dashboardService.refreshDashboardStats();
+        
+        return readings;
+    }
+
+    /**
+     * Dohvaća očitanja za određeni period
+     */
+    public List<MeterReading> findByReadingDateBetween(LocalDate startDate, LocalDate endDate) {
+        List<MeterReading> readings = meterReadingRepository.findByReadingDateBetween(startDate, endDate);
+        
+        // Osvježi dashboard statistike
+        dashboardService.refreshDashboardStats();
+        
+        return readings;
     }
 }

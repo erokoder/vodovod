@@ -135,6 +135,7 @@ $(document).ready(function() {
                 console.error('Error loading previous reading:', xhr.responseText);
                 $previousReading.val('');
                 $lastReadingInfo.text('Greška pri učitavanju prethodnog očitanja');
+                calculateConsumption();
             }
         });
     }
@@ -144,6 +145,7 @@ $(document).ready(function() {
         $consumption.val('');
         $lastReadingInfo.text('');
         $validationMessage.hide();
+        calculateConsumption(); // This will set consumption to empty since previous is empty
     }
 
     function calculateConsumption() {
@@ -153,10 +155,17 @@ $(document).ready(function() {
         if (current > 0 && previous >= 0) {
             var consumption = current - previous;
             $consumption.val(consumption.toFixed(3));
+        } else if (current > 0 && previous === 0) {
+            // First reading for user
+            $consumption.val(current.toFixed(3));
         } else {
             $consumption.val('');
         }
     }
+
+    // Calculate consumption whenever any relevant field changes
+    $previousReading.on('input', calculateConsumption);
+    $currentReading.on('input', calculateConsumption);
 
     function validateReading() {
         var userId = $userSelect.val();
@@ -166,6 +175,7 @@ $(document).ready(function() {
         if (!userId || !currentReading || !readingDate) {
             $validationMessage.hide();
             $submitBtn.prop('disabled', false);
+            calculateConsumption(); // Still calculate consumption even if validation is incomplete
             return;
         }
 
@@ -189,6 +199,7 @@ $(document).ready(function() {
                     $submitBtn.prop('disabled', true);
                     $currentReading.removeClass('is-valid').addClass('is-invalid');
                 }
+                calculateConsumption(); // Ensure consumption is calculated after validation
             },
             error: function(xhr) {
                 console.error('Error validating reading:', xhr.responseText);
@@ -196,6 +207,7 @@ $(document).ready(function() {
                 $validationMessage.show();
                 $submitBtn.prop('disabled', true);
                 $currentReading.removeClass('is-valid').addClass('is-invalid');
+                calculateConsumption(); // Ensure consumption is calculated even on error
             }
         });
     }
@@ -203,6 +215,8 @@ $(document).ready(function() {
     // Initialize if user is already selected (in case of form errors)
     if ($userSelect.val()) {
         loadPreviousReading($userSelect.val());
+    } else {
+        calculateConsumption(); // Initialize consumption calculation
     }
 });
 </script>

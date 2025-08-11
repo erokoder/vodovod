@@ -62,4 +62,29 @@ public class DashboardService {
 
         return stats;
     }
+
+    /**
+     * Osvježava statistike dashboard-a
+     */
+    public DashboardStats refreshDashboardStats() {
+        return getDashboardStats();
+    }
+
+    /**
+     * Automatski osvježava statistike dashboard-a
+     */
+    public DashboardStats autoRefreshDashboardStats() {
+        // Ovdje možemo dodati logiku za automatsko osvježavanje
+        // Na primjer, provjeriti je li potrebno osvježiti podatke
+        return refreshDashboardStats();
+    }
+
+    /**
+     * Automatski osvježava statistike dashboard-a kada se pristupa
+     */
+    public DashboardStats autoRefreshDashboardStatsOnAccess() {
+        // Ovdje možemo dodati logiku za automatsko osvježavanje
+        // Na primjer, provjeriti je li potrebno osvježiti podatke
+        return refreshDashboardStats();
+    }
 }

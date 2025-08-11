@@ -3,6 +3,7 @@ package com.vodovod.controller;
 import com.vodovod.model.Role;
 import com.vodovod.model.User;
 import com.vodovod.service.UserService;
+import com.vodovod.service.DashboardService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -23,6 +24,9 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private DashboardService dashboardService;
+
     @GetMapping
     public String listUsers(Model model) {
         List<User> users = userService.getAllUsers();
@@ -30,6 +34,9 @@ public class UserController {
         model.addAttribute("pageTitle", "Korisnici");
         model.addAttribute("activeMenu", "users");
         model.addAttribute("users", users);
+        
+        // Osvježi dashboard statistike
+        dashboardService.refreshDashboardStats();
         
         return "users/list";
     }
@@ -43,6 +50,9 @@ public class UserController {
         model.addAttribute("activeMenu", "users");
         model.addAttribute("user", user);
         model.addAttribute("roles", Role.values());
+        
+        // Osvježi dashboard statistike
+        dashboardService.refreshDashboardStats();
         
         return "users/form";
     }
@@ -70,7 +80,7 @@ public class UserController {
             redirectAttributes.addFlashAttribute("successMessage", 
                 "Korisnik " + user.getFullName() + " je uspješno kreiran.");
                 
-            return "redirect:/users";
+            return "redirect:/dashboard";
             
         } catch (Exception e) {
             model.addAttribute("pageTitle", "Novi Korisnik");
@@ -93,6 +103,9 @@ public class UserController {
         model.addAttribute("activeMenu", "users");
         model.addAttribute("user", userOpt.get());
         
+        // Osvježi dashboard statistike
+        dashboardService.refreshDashboardStats();
+        
         return "users/view";
     }
 
@@ -108,6 +121,9 @@ public class UserController {
         model.addAttribute("activeMenu", "users");
         model.addAttribute("user", userOpt.get());
         model.addAttribute("roles", Role.values());
+        
+        // Osvježi dashboard statistike
+        dashboardService.refreshDashboardStats();
         
         return "users/form";
     }
@@ -133,7 +149,7 @@ public class UserController {
             redirectAttributes.addFlashAttribute("successMessage", 
                 "Korisnik " + user.getFullName() + " je uspješno ažuriran.");
                 
-            return "redirect:/users";
+            return "redirect:/dashboard";
             
         } catch (Exception e) {
             model.addAttribute("pageTitle", "Uredi Korisnika");
