@@ -15,7 +15,7 @@
             <span aria-hidden="true">&times;</span>
         </button>
     </div>
-    
+
     <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
         <i class="bi bi-exclamation-triangle"></i>
         <span th:text="${errorMessage}"></span>
@@ -90,7 +90,7 @@ $(document).ready(function() {
         },
         "order": [[ 3, "desc" ]] // Sortiraj po datumu silazno
     });
-    
+
     // Auto-sakrij success message nakon 5 sekundi
     setTimeout(function() {
         $('.alert-success').fadeOut('slow');
