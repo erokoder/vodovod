@@ -37,7 +37,18 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
+                                <tr th:each="reading : ${readings}" th:unless="${#lists.isEmpty(readings)}">
+                                    <td th:text="${reading.id}">1</td>
+                                    <td th:text="${reading.user.fullName}">Ime Prezime</td>
+                                    <td th:text="${reading.readingDate}">2023-01-01</td>
+                                    <td th:text="${reading.previousReadingValue}">0.000</td>
+                                    <td th:text="${reading.readingValue}">10.000</td>
+                                    <td th:text="${reading.consumption}">10.000</td>
+                                    <td>
+                                        <!-- Placeholder for future actions (edit/delete) -->
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(readings)}">
                                     <td colspan="7" class="text-center">Nema podataka za prikaz</td>
                                 </tr>
                             </tbody>
