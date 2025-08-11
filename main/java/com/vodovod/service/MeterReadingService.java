@@ -4,6 +4,7 @@ import com.vodovod.model.MeterReading;
 import com.vodovod.model.User;
 import com.vodovod.repository.MeterReadingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,10 +41,10 @@ public class MeterReadingService {
         
         // Spremi očitanje
         MeterReading savedReading = meterReadingRepository.save(reading);
-        
+
         // Osvježi dashboard statistike
         dashboardService.refreshDashboardStats();
-        
+
         return savedReading;
     }
 
@@ -52,10 +53,10 @@ public class MeterReadingService {
      */
     public Optional<MeterReading> getLatestReadingByUser(User user) {
         Optional<MeterReading> reading = meterReadingRepository.findLatestByUser(user);
-        
+
         // Osvježi dashboard statistike
         dashboardService.refreshDashboardStats();
-        
+
         return reading;
     }
 
@@ -64,10 +65,10 @@ public class MeterReadingService {
      */
     public List<MeterReading> getReadingsByUser(User user) {
         List<MeterReading> readings = meterReadingRepository.findByUserOrderByReadingDateDesc(user);
-        
+
         // Osvježi dashboard statistike
         dashboardService.refreshDashboardStats();
-        
+
         return readings;
     }
 
@@ -110,10 +111,10 @@ public class MeterReadingService {
      */
     public List<MeterReading> getAllReadings() {
         List<MeterReading> readings = meterReadingRepository.findAll();
-        
+
         // Osvježi dashboard statistike
         dashboardService.refreshDashboardStats();
-        
+
         return readings;
     }
 
@@ -122,17 +123,17 @@ public class MeterReadingService {
      */
     public List<MeterReading> getAllReadingsWithConsumption() {
         List<MeterReading> readings = meterReadingRepository.findAllByOrderByReadingDateDesc();
-        
+
         // Osiguraj da je potrošnja izračunata za sva očitanja
         for (MeterReading reading : readings) {
             if (reading.getConsumption() == null) {
                 reading.calculateConsumption();
             }
         }
-        
+
         // Osvježi dashboard statistike
         dashboardService.refreshDashboardStats();
-        
+
         return readings;
     }
 
@@ -141,10 +142,10 @@ public class MeterReadingService {
      */
     public List<MeterReading> getReadingsWithoutBill() {
         List<MeterReading> readings = meterReadingRepository.findReadingsWithoutBill();
-        
+
         // Osvježi dashboard statistike
         dashboardService.refreshDashboardStats();
-        
+
         return readings;
     }
 
@@ -153,10 +154,10 @@ public class MeterReadingService {
      */
     public List<MeterReading> findByReadingDateBetween(LocalDate startDate, LocalDate endDate) {
         List<MeterReading> readings = meterReadingRepository.findByReadingDateBetween(startDate, endDate);
-        
+
         // Osvježi dashboard statistike
         dashboardService.refreshDashboardStats();
-        
+
         return readings;
     }
 }
