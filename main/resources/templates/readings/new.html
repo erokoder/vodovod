@@ -12,6 +12,12 @@
         <h1 class="h3 mb-0 text-gray-800">Novo očitanje</h1>
     </div>
 
+    <!-- Flash Messages -->
+    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <span th:text="${errorMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
     <!-- Content Row -->
     <div class="row">
         <div class="col-lg-8">
@@ -20,40 +26,235 @@
                     <h6 class="m-0 font-weight-bold text-primary">Unos novog očitanja</h6>
                 </div>
                 <div class="card-body">
-                    <form method="post" action="/readings/new">
+                    <form method="post" action="/readings/new" id="readingForm">
                         <div class="form-group">
-                            <label for="userId">Korisnik</label>
+                            <label for="userId">Korisnik <span class="text-danger">*</span></label>
                             <select class="form-control" id="userId" name="userId" required>
                                 <option value="">Odaberite korisnika</option>
+                                <option th:each="user : ${users}" 
+                                        th:value="${user.id}" 
+                                        th:text="${user.firstName + ' ' + user.lastName + ' (' + user.meterNumber + ')'}">
+                                </option>
                             </select>
+                            <small class="form-text text-muted">Odaberite korisnika za kojeg unosite očitanje</small>
                         </div>
                         <div class="form-group">
-                            <label for="readingDate">Datum očitanja</label>
+                            <label for="readingDate">Datum očitanja <span class="text-danger">*</span></label>
                             <input type="date" class="form-control" id="readingDate" name="readingDate" required>
+                            <small class="form-text text-muted">Datum kada je izvršeno očitanje</small>
                         </div>
                         <div class="form-group">
                             <label for="previousReading">Prethodno stanje (m³)</label>
                             <input type="number" class="form-control" id="previousReading" name="previousReading" step="0.01" readonly>
+                            <small class="form-text text-muted">Automatski se popunjava zadnjim očitanjem</small>
                         </div>
                         <div class="form-group">
-                            <label for="currentReading">Novo stanje (m³)</label>
-                            <input type="number" class="form-control" id="currentReading" name="currentReading" step="0.01" required>
+                            <label for="currentReading">Novo stanje (m³) <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="currentReading" name="currentReading" step="0.01" required min="0">
+                            <small class="form-text text-muted">Trenutno stanje brojila</small>
                         </div>
                         <div class="form-group">
                             <label for="consumption">Potrošnja (m³)</label>
                             <input type="number" class="form-control" id="consumption" name="consumption" step="0.01" readonly>
+                            <small class="form-text text-muted">Automatski se izračunava kao razlika</small>
                         </div>
                         <div class="form-group">
                             <label for="notes">Napomene</label>
                             <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                            <small class="form-text text-muted">Opcionalne napomene vezane uz očitanje</small>
                         </div>
-                        <button type="submit" class="btn btn-primary">Spremi očitanje</button>
-                        <a href="/readings" class="btn btn-secondary">Odustani</a>
+                        <button type="submit" class="btn btn-primary" id="submitBtn">
+                            <i class="fas fa-save"></i> Spremi očitanje
+                        </button>
+                        <a href="/readings" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Odustani
+                        </a>
                     </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Info Panel -->
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-info">Informacije</h6>
+                </div>
+                <div class="card-body">
+                    <div id="userInfo" style="display: none;">
+                        <h6>Odabrani korisnik:</h6>
+                        <p id="selectedUserName" class="text-primary"></p>
+                        <p id="selectedUserMeter" class="text-muted"></p>
+                        <hr>
+                        <h6>Zadnje očitanje:</h6>
+                        <p id="lastReadingInfo" class="text-info"></p>
+                        <p id="lastReadingDate" class="text-muted"></p>
+                    </div>
+                    <div id="noUserSelected" class="text-center text-muted">
+                        <i class="fas fa-info-circle fa-2x mb-2"></i>
+                        <p>Odaberite korisnika da vidite dodatne informacije</p>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<script th:inline="javascript">
+document.addEventListener('DOMContentLoaded', function() {
+    const userIdSelect = document.getElementById('userId');
+    const readingDateInput = document.getElementById('readingDate');
+    const previousReadingInput = document.getElementById('previousReading');
+    const currentReadingInput = document.getElementById('currentReading');
+    const consumptionInput = document.getElementById('consumption');
+    const userInfoDiv = document.getElementById('userInfo');
+    const noUserSelectedDiv = document.getElementById('noUserSelected');
+    const selectedUserName = document.getElementById('selectedUserName');
+    const selectedUserMeter = document.getElementById('selectedUserMeter');
+    const lastReadingInfo = document.getElementById('lastReadingInfo');
+    const lastReadingDate = document.getElementById('lastReadingDate');
+    
+    // Postavi današnji datum kao default
+    const today = new Date().toISOString().split('T')[0];
+    readingDateInput.value = today;
+    
+    // Event listener za promjenu korisnika
+    userIdSelect.addEventListener('change', function() {
+        const selectedUserId = this.value;
+        
+        if (selectedUserId) {
+            loadUserInfo(selectedUserId);
+            loadLastReading(selectedUserId);
+        } else {
+            hideUserInfo();
+            clearForm();
+        }
+    });
+    
+    // Event listener za promjenu trenutnog očitanja
+    currentReadingInput.addEventListener('input', calculateConsumption);
+    
+    // Event listener za validaciju forme
+    document.getElementById('readingForm').addEventListener('submit', validateForm);
+    
+    function loadUserInfo(userId) {
+        // Dohvati korisnike i pronađi odabranog
+        fetch('/readings/api/users')
+            .then(response => response.json())
+            .then(users => {
+                const selectedUser = users.find(user => user.id == userId);
+                if (selectedUser) {
+                    selectedUserName.textContent = selectedUser.firstName + ' ' + selectedUser.lastName;
+                    selectedUserMeter.textContent = 'Broj brojila: ' + selectedUser.meterNumber;
+                    userInfoDiv.style.display = 'block';
+                    noUserSelectedDiv.style.display = 'none';
+                }
+            })
+            .catch(error => console.error('Greška pri učitavanju korisnika:', error));
+    }
+    
+    function loadLastReading(userId) {
+        fetch(`/readings/api/last-reading/${userId}`)
+            .then(response => response.json())
+            .then(lastReading => {
+                if (lastReading) {
+                    previousReadingInput.value = lastReading.readingValue;
+                    lastReadingInfo.textContent = lastReading.readingValue + ' m³';
+                    lastReadingDate.textContent = 'Datum: ' + lastReading.readingDate;
+                } else {
+                    previousReadingInput.value = '0.00';
+                    lastReadingInfo.textContent = 'Nema prethodnih očitanja';
+                    lastReadingDate.textContent = 'Prvo očitanje';
+                }
+                calculateConsumption();
+            })
+            .catch(error => {
+                console.error('Greška pri učitavanju zadnjeg očitanja:', error);
+                previousReadingInput.value = '0.00';
+                lastReadingInfo.textContent = 'Greška pri učitavanju';
+                lastReadingDate.textContent = '';
+                calculateConsumption();
+            });
+    }
+    
+    function hideUserInfo() {
+        userInfoDiv.style.display = 'none';
+        noUserSelectedDiv.style.display = 'block';
+    }
+    
+    function clearForm() {
+        previousReadingInput.value = '';
+        currentReadingInput.value = '';
+        consumptionInput.value = '';
+        lastReadingInfo.textContent = '';
+        lastReadingDate.textContent = '';
+    }
+    
+    function calculateConsumption() {
+        const previous = parseFloat(previousReadingInput.value) || 0;
+        const current = parseFloat(currentReadingInput.value) || 0;
+        
+        if (current > 0) {
+            const consumption = current - previous;
+            consumptionInput.value = consumption.toFixed(2);
+            
+            // Validacija da novo očitanje mora biti veće od prethodnog
+            if (current <= previous && previous > 0) {
+                currentReadingInput.setCustomValidity('Novo očitanje mora biti veće od prethodnog');
+                currentReadingInput.classList.add('is-invalid');
+            } else {
+                currentReadingInput.setCustomValidity('');
+                currentReadingInput.classList.remove('is-invalid');
+            }
+        } else {
+            consumptionInput.value = '';
+        }
+    }
+    
+    function validateForm(event) {
+        const userId = userIdSelect.value;
+        const readingDate = readingDateInput.value;
+        const currentReading = currentReadingInput.value;
+        
+        if (!userId) {
+            event.preventDefault();
+            alert('Molimo odaberite korisnika');
+            userIdSelect.focus();
+            return false;
+        }
+        
+        if (!readingDate) {
+            event.preventDefault();
+            alert('Molimo unesite datum očitanja');
+            readingDateInput.focus();
+            return false;
+        }
+        
+        if (!currentReading || currentReading <= 0) {
+            event.preventDefault();
+            alert('Molimo unesite valjano novo stanje brojila');
+            currentReadingInput.focus();
+            return false;
+        }
+        
+        const previous = parseFloat(previousReadingInput.value) || 0;
+        const current = parseFloat(currentReading);
+        
+        if (current <= previous && previous > 0) {
+            event.preventDefault();
+            alert('Novo očitanje mora biti veće od prethodnog očitanja');
+            currentReadingInput.focus();
+            return false;
+        }
+        
+        // Ako je sve u redu, prikaži loading na buttonu
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Spremanje...';
+        submitBtn.disabled = true;
+        
+        return true;
+    }
+});
+</script>
 </body>
 </html>
