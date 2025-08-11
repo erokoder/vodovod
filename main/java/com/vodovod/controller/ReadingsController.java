@@ -35,7 +35,9 @@ public class ReadingsController {
 
     @GetMapping
     public String index(Model model) {
+        List<MeterReading> readings = meterReadingService.getAllReadings();
         model.addAttribute("pageTitle", "Očitanja");
+        model.addAttribute("readings", readings);
         return "readings/index";
     }
     
