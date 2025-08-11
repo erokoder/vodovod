@@ -18,8 +18,7 @@ public interface MeterReadingRepository extends JpaRepository<MeterReading, Long
     @Query("SELECT mr FROM MeterReading mr WHERE mr.user = :user ORDER BY mr.readingDate DESC")
     List<MeterReading> findByUserOrderByReadingDateDescending(User user);
     
-    @Query("SELECT mr FROM MeterReading mr WHERE mr.user = :user ORDER BY mr.readingDate DESC LIMIT 1")
-    Optional<MeterReading> findLatestByUser(User user);
+    Optional<MeterReading> findTopByUserOrderByReadingDateDesc(User user);
     
     @Query("SELECT mr FROM MeterReading mr WHERE mr.user = :user AND mr.readingDate = :readingDate")
     Optional<MeterReading> findByUserAndReadingDate(User user, LocalDate readingDate);
