@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.math.RoundingMode;
 
 @Controller
 @RequestMapping("/readings")
@@ -44,7 +45,9 @@ public class ReadingsController {
     @GetMapping("/new")
     public String newReading(Model model) {
         model.addAttribute("pageTitle", "Novo očitanje");
-        model.addAttribute("newReadingDTO", new NewReadingDTO());
+        NewReadingDTO dto = new NewReadingDTO();
+        dto.setReadingDate(LocalDate.now());
+        model.addAttribute("newReadingDTO", dto);
         
         // Dodaj listu korisnika za dropdown
         List<User> users = userService.findByRoleAndEnabledTrue(Role.USER);
@@ -158,6 +161,7 @@ public class ReadingsController {
             Map<String, Object> response = new HashMap<>();
             response.put("valid", isValid);
             
+            // Ako nije validno, vrati poruku zašto
             if (!isValid) {
                 Optional<MeterReading> latestReading = meterReadingService.getLatestReadingByUser(user);
                 if (latestReading.isPresent()) {
@@ -169,6 +173,27 @@ public class ReadingsController {
                 }
                 if (meterReadingService.existsReadingForUserAndDate(user, readingDate)) {
                     response.put("message", "Već postoji očitanje za ovaj datum");
+                }
+            } else {
+                // Ako je validno, provjeri odstupanje potrošnje > 20% i postavi upozorenje
+                Optional<MeterReading> latestReading = meterReadingService.getLatestReadingByUser(user);
+                if (latestReading.isPresent()) {
+                    MeterReading last = latestReading.get();
+                    BigDecimal previousOfLast = last.getPreviousReadingValue();
+                    if (previousOfLast != null) {
+                        BigDecimal lastConsumption = last.getReadingValue().subtract(previousOfLast);
+                        if (lastConsumption.signum() > 0) {
+                            BigDecimal newConsumption = newReading.subtract(last.getReadingValue());
+                            if (newConsumption.signum() > 0) {
+                                BigDecimal diff = newConsumption.subtract(lastConsumption).abs();
+                                BigDecimal percent = diff.divide(lastConsumption, 6, RoundingMode.HALF_UP);
+                                if (percent.compareTo(new BigDecimal("0.20")) > 0) {
+                                    response.put("warn", true);
+                                    response.put("warningMessage", "Nova potrošnja (" + newConsumption + " m³) odstupa više od 20% od prethodne (" + lastConsumption + " m³)");
+                                }
+                            }
+                        }
+                    }
                 }
             }
             

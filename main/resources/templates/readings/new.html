@@ -28,7 +28,7 @@
                     <h6 class="m-0 font-weight-bold text-primary">Unos novog očitanja</h6>
                 </div>
                 <div class="card-body">
-                    <form method="post" action="/readings/new" th:object="${newReadingDTO}">
+                    <form id="newReadingForm" method="post" action="/readings/new" th:object="${newReadingDTO}">
                         <div class="form-group">
                             <label for="userId">Korisnik</label>
                             <select class="form-control" id="userId" name="userId" th:field="*{userId}" required>
@@ -96,6 +96,8 @@ $(document).ready(function() {
     var $lastReadingInfo = $('#lastReadingInfo');
     var $validationMessage = $('#readingValidationMessage');
     var $submitBtn = $('#submitBtn');
+    var $form = $('#newReadingForm');
+    var pendingWarn = null;
 
     // Set today's date as default
     $readingDate.val(new Date().toISOString().split('T')[0]);
@@ -114,6 +116,18 @@ $(document).ready(function() {
     $currentReading.add($readingDate).on('input change', function() {
         calculateConsumption();
         validateReading();
+    });
+
+    // Intercept submit to show warning confirmation if needed
+    $form.on('submit', function(e) {
+        if (pendingWarn) {
+            var proceed = window.confirm(pendingWarn + '\n\nŽelite li svejedno spremiti očitanje?');
+            if (!proceed) {
+                e.preventDefault();
+                return false;
+            }
+            // If proceed, allow default submit to continue
+        }
     });
 
     function loadPreviousReading(userId) {
@@ -179,10 +193,14 @@ $(document).ready(function() {
                 readingDate: readingDate
             }),
             success: function(data) {
+                pendingWarn = null;
                 if (data.valid) {
                     $validationMessage.hide();
                     $submitBtn.prop('disabled', false);
                     $currentReading.removeClass('is-invalid').addClass('is-valid');
+                    if (data.warn && data.warningMessage) {
+                        pendingWarn = data.warningMessage;
+                    }
                 } else {
                     $validationMessage.find('small').text(data.message || 'Neispravno očitanje');
                     $validationMessage.show();
