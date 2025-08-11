@@ -7,6 +7,23 @@
 </head>
 <body>
 <div layout:fragment="content">
+    <!-- Success/Error Messages -->
+    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle"></i>
+        <span th:text="${successMessage}"></span>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    
+    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle"></i>
+        <span th:text="${errorMessage}"></span>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+
     <!-- Page Heading -->
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800">Očitanja</h1>
@@ -29,16 +46,30 @@
                                 <tr>
                                     <th>ID</th>
                                     <th>Korisnik</th>
+                                    <th>Broj vodomjera</th>
                                     <th>Datum očitanja</th>
-                                    <th>Prethodno stanje</th>
-                                    <th>Novo stanje</th>
-                                    <th>Potrošnja</th>
-                                    <th>Akcije</th>
+                                    <th>Prethodno stanje (m³)</th>
+                                    <th>Novo stanje (m³)</th>
+                                    <th>Potrošnja (m³)</th>
+                                    <th>Napomene</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td colspan="7" class="text-center">Nema podataka za prikaz</td>
+                                <tr th:if="${readings == null or readings.empty}">
+                                    <td colspan="8" class="text-center">Nema podataka za prikaz</td>
+                                </tr>
+                                <tr th:each="reading : ${readings}">
+                                    <td th:text="${reading.id}">ID</td>
+                                    <td th:text="${reading.user.fullName}">Korisnik</td>
+                                    <td th:text="${reading.user.meterNumber}">Broj vodomjera</td>
+                                    <td th:text="${#temporals.format(reading.readingDate, 'dd.MM.yyyy')}">Datum</td>
+                                    <td class="text-right" th:text="${#numbers.formatDecimal(reading.previousReadingValue, 1, 'COMMA', 3, 'POINT')}">0.000</td>
+                                    <td class="text-right" th:text="${#numbers.formatDecimal(reading.readingValue, 1, 'COMMA', 3, 'POINT')}">0.000</td>
+                                    <td class="text-right">
+                                        <span th:class="${reading.consumption > 100 ? 'badge badge-warning' : (reading.consumption < 0 ? 'badge badge-danger' : 'badge badge-success')}"
+                                              th:text="${#numbers.formatDecimal(reading.consumption, 1, 'COMMA', 3, 'POINT')} + ' m³'">0.000 m³</span>
+                                    </td>
+                                    <td th:text="${reading.notes ?: '-'}">Napomene</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -47,6 +78,25 @@
             </div>
         </div>
     </div>
+</div>
+
+<div layout:fragment="scripts">
+<script>
+$(document).ready(function() {
+    // Inicijalizuj DataTable za sortiranje i pretraživanje
+    $('#dataTable').DataTable({
+        "language": {
+            "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Croatian.json"
+        },
+        "order": [[ 3, "desc" ]] // Sortiraj po datumu silazno
+    });
+    
+    // Auto-sakrij success message nakon 5 sekundi
+    setTimeout(function() {
+        $('.alert-success').fadeOut('slow');
+    }, 5000);
+});
+</script>
 </div>
 </body>
 </html>

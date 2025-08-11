@@ -76,8 +76,12 @@
                             <label for="notes">Napomene</label>
                             <textarea class="form-control" id="notes" name="notes" th:field="*{notes}" rows="3"></textarea>
                         </div>
-                        <button type="submit" class="btn btn-primary" id="submitBtn">Spremi očitanje</button>
-                        <a href="/readings" class="btn btn-secondary">Odustani</a>
+                        <button type="submit" class="btn btn-primary" id="submitBtn">
+                            <i class="bi bi-save"></i> Spremi očitanje
+                        </button>
+                        <a href="/readings" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Odustani
+                        </a>
                     </form>
                 </div>
             </div>
@@ -110,10 +114,19 @@ $(document).ready(function() {
         }
     });
 
-    // When current reading or date changes, validate and calculate consumption
-    $currentReading.add($readingDate).on('input change', function() {
+    // When current reading changes, immediately calculate consumption and validate
+    $currentReading.on('input', function() {
         calculateConsumption();
-        validateReading();
+        if ($userSelect.val()) {
+            validateReading();
+        }
+    });
+    
+    // When date changes, validate
+    $readingDate.on('change', function() {
+        if ($userSelect.val() && $currentReading.val()) {
+            validateReading();
+        }
     });
 
     function loadPreviousReading(userId) {
@@ -153,8 +166,18 @@ $(document).ready(function() {
         if (current > 0 && previous >= 0) {
             var consumption = current - previous;
             $consumption.val(consumption.toFixed(3));
+            
+            // Dodaj vizualni indikator
+            if (consumption < 0) {
+                $consumption.addClass('bg-danger text-white').removeClass('bg-success bg-warning');
+            } else if (consumption > 100) {
+                $consumption.addClass('bg-warning').removeClass('bg-success bg-danger text-white');
+            } else {
+                $consumption.addClass('bg-success text-white').removeClass('bg-danger bg-warning');
+            }
         } else {
             $consumption.val('');
+            $consumption.removeClass('bg-success bg-danger bg-warning text-white');
         }
     }
 

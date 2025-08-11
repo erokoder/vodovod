@@ -52,6 +52,10 @@ public class UserService {
     public Optional<User> getUserByMeterNumber(String meterNumber) {
         return userRepository.findByMeterNumber(meterNumber);
     }
+    
+    public Optional<User> findByMeterNumber(String meterNumber) {
+        return getUserByMeterNumber(meterNumber);
+    }
 
     public User saveUser(User user) {
         // Enkriptiraj lozinku ako nije već enkriptirana

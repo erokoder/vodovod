@@ -1,10 +1,13 @@
 package com.vodovod.controller;
 
+import com.vodovod.model.MeterReading;
 import com.vodovod.model.Role;
 import com.vodovod.model.User;
+import com.vodovod.service.MeterReadingService;
 import com.vodovod.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -12,7 +15,10 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Controller
@@ -22,6 +28,9 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+    
+    @Autowired
+    private MeterReadingService meterReadingService;
 
     @GetMapping
     public String listUsers(Model model) {
@@ -178,5 +187,49 @@ public class UserController {
         }
         
         return "redirect:/users";
+    }
+    
+    /**
+     * API endpoint za provjeru prethodnih očitanja po broju vodomjera
+     */
+    @GetMapping("/api/check-meter/{meterNumber}")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> checkMeterNumber(@PathVariable String meterNumber) {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            // Provjeri postoji li korisnik s tim brojem vodomjera
+            Optional<User> existingUser = userService.findByMeterNumber(meterNumber);
+            
+            if (existingUser.isPresent()) {
+                User user = existingUser.get();
+                
+                // Dohvati najnovije očitanje
+                Optional<MeterReading> latestReading = meterReadingService.getLatestReadingByUser(user);
+                
+                if (latestReading.isPresent()) {
+                    MeterReading reading = latestReading.get();
+                    response.put("hasReading", true);
+                    response.put("previousReading", reading.getReadingValue());
+                    response.put("lastReadingDate", reading.getReadingDate());
+                    response.put("userName", user.getFullName());
+                    response.put("message", "Pronađen korisnik " + user.getFullName() + " s prethodnim očitanjem: " + reading.getReadingValue() + " m³");
+                } else {
+                    response.put("hasReading", false);
+                    response.put("previousReading", BigDecimal.ZERO);
+                    response.put("userName", user.getFullName());
+                    response.put("message", "Pronađen korisnik " + user.getFullName() + " bez prethodnih očitanja");
+                }
+            } else {
+                response.put("hasReading", false);
+                response.put("available", true);
+                response.put("message", "Broj vodomjera je dostupan");
+            }
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
     }
 }

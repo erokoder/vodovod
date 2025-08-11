@@ -92,6 +92,13 @@ public class MeterReadingService {
     public List<MeterReading> getAllReadings() {
         return meterReadingRepository.findAll();
     }
+    
+    /**
+     * Dohvaća sva očitanja sortirana po datumu silazno
+     */
+    public List<MeterReading> getAllReadingsSorted() {
+        return meterReadingRepository.findAllByOrderByReadingDateDesc();
+    }
 
     /**
      * Dohvaća očitanja bez generiranih računa

@@ -35,7 +35,12 @@ public class ReadingsController {
 
     @GetMapping
     public String index(Model model) {
+        // Dohvati sva očitanja sortirana po datumu silazno
+        List<MeterReading> readings = meterReadingService.getAllReadingsSorted();
+        
         model.addAttribute("pageTitle", "Očitanja");
+        model.addAttribute("readings", readings);
+        
         return "readings/index";
     }
     

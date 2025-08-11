@@ -206,5 +206,49 @@
         </div>
     </div>
 </div>
+
+<div layout:fragment="scripts">
+<script>
+$(document).ready(function() {
+    var $meterNumber = $('#meterNumber');
+    var isNewUser = ![[${user.id == null}]];
+    
+    // Kad se promijeni broj vodomjera, provjeri postoje li prethodna očitanja
+    $meterNumber.on('blur', function() {
+        var meterNumber = $(this).val();
+        if (meterNumber && meterNumber.trim() !== '' && isNewUser) {
+            checkPreviousReadings(meterNumber);
+        }
+    });
+    
+    function checkPreviousReadings(meterNumber) {
+        // Prikaži poruku da se provjerava
+        var $helpText = $meterNumber.siblings('.form-text');
+        $helpText.html('<span class="text-info"><i class="spinner-border spinner-border-sm"></i> Provjeravam prethodna očitanja...</span>');
+        
+        // Pozovi API za provjeru
+        $.ajax({
+            url: '/users/api/check-meter/' + encodeURIComponent(meterNumber),
+            type: 'GET',
+            success: function(data) {
+                if (data.hasReading) {
+                    $helpText.html('<span class="text-warning"><i class="bi bi-exclamation-triangle"></i> ' + data.message + '</span>');
+                    // Prikaži alert s informacijom
+                    alert('Napomena: ' + data.message + '\n\nPrethodna očitanja će biti preuzeta automatski.');
+                } else if (data.available) {
+                    $helpText.html('<span class="text-success"><i class="bi bi-check-circle"></i> ' + data.message + '</span>');
+                } else {
+                    $helpText.html('<span class="text-info"><i class="bi bi-info-circle"></i> ' + data.message + '</span>');
+                }
+            },
+            error: function(xhr) {
+                $helpText.html('<span class="text-danger"><i class="bi bi-x-circle"></i> Greška pri provjeri broja vodomjera</span>');
+            }
+        });
+    }
+});
+</script>
+</div>
+
 </body>
 </html>
