@@ -11,8 +11,23 @@
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800">Očitanja</h1>
         <a href="/readings/new" class="btn btn-primary btn-sm">
-            <i class="bi bi-plus-circle"></i> Novo očitanje
+            <i class="fas fa-plus-circle"></i> Novo očitanje
         </a>
+    </div>
+
+    <!-- Alert messages -->
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <span th:text="${error}"></span>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <span th:text="${success}"></span>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
     </div>
 
     <!-- Content Row -->
@@ -29,16 +44,55 @@
                                 <tr>
                                     <th>ID</th>
                                     <th>Korisnik</th>
+                                    <th>Adresa</th>
+                                    <th>Broj vodomjera</th>
                                     <th>Datum očitanja</th>
-                                    <th>Prethodno stanje</th>
-                                    <th>Novo stanje</th>
-                                    <th>Potrošnja</th>
-                                    <th>Akcije</th>
+                                    <th>Prethodno stanje (m³)</th>
+                                    <th>Novo stanje (m³)</th>
+                                    <th>Potrošnja (m³)</th>
+                                    <th>Napomene</th>
+                                    <th>Račun generiran</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td colspan="7" class="text-center">Nema podataka za prikaz</td>
+                                <tr th:if="${readings == null or readings.empty}">
+                                    <td colspan="10" class="text-center">Nema podataka za prikaz</td>
+                                </tr>
+                                <tr th:each="reading : ${readings}">
+                                    <td th:text="${reading.id}"></td>
+                                    <td>
+                                        <span th:text="${reading.user.firstName + ' ' + reading.user.lastName}"></span>
+                                    </td>
+                                    <td th:text="${reading.user.address}"></td>
+                                    <td th:text="${reading.user.meterNumber}"></td>
+                                    <td th:text="${#temporals.format(reading.readingDate, 'dd.MM.yyyy')}"></td>
+                                    <td class="text-right">
+                                        <span th:if="${reading.previousReadingValue != null}" 
+                                              th:text="${#numbers.formatDecimal(reading.previousReadingValue, 1, 3)}"></span>
+                                        <span th:unless="${reading.previousReadingValue != null}">-</span>
+                                    </td>
+                                    <td class="text-right">
+                                        <strong th:text="${#numbers.formatDecimal(reading.readingValue, 1, 3)}"></strong>
+                                    </td>
+                                    <td class="text-right">
+                                        <span th:if="${reading.consumption != null}" 
+                                              class="badge badge-info"
+                                              th:text="${#numbers.formatDecimal(reading.consumption, 1, 3) + ' m³'}"></span>
+                                        <span th:unless="${reading.consumption != null}">-</span>
+                                    </td>
+                                    <td>
+                                        <span th:if="${reading.notes != null and !reading.notes.isEmpty()}" 
+                                              th:text="${reading.notes}"></span>
+                                        <span th:unless="${reading.notes != null and !reading.notes.isEmpty()}">-</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span th:if="${reading.billGenerated}" class="badge badge-success">
+                                            <i class="fas fa-check"></i> Da
+                                        </span>
+                                        <span th:unless="${reading.billGenerated}" class="badge badge-warning">
+                                            <i class="fas fa-times"></i> Ne
+                                        </span>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
@@ -48,5 +102,18 @@
         </div>
     </div>
 </div>
+
+<script th:fragment="pageScript">
+$(document).ready(function() {
+    // Inicijalizuj DataTable
+    $('#dataTable').DataTable({
+        "language": {
+            "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Croatian.json"
+        },
+        "order": [[ 4, "desc" ]], // Sortiraj po datumu očitanja (silazno)
+        "pageLength": 25
+    });
+});
+</script>
 </body>
 </html>

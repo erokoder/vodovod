@@ -12,6 +12,21 @@
         <h1 class="h3 mb-0 text-gray-800">Novo očitanje</h1>
     </div>
 
+    <!-- Alert messages -->
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <span th:text="${error}"></span>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <span th:text="${success}"></span>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+
     <!-- Content Row -->
     <div class="row">
         <div class="col-lg-8">
@@ -20,40 +35,244 @@
                     <h6 class="m-0 font-weight-bold text-primary">Unos novog očitanja</h6>
                 </div>
                 <div class="card-body">
-                    <form method="post" action="/readings/new">
+                    <form method="post" action="/readings/new" id="readingForm">
                         <div class="form-group">
-                            <label for="userId">Korisnik</label>
+                            <label for="userId">Korisnik <span class="text-danger">*</span></label>
                             <select class="form-control" id="userId" name="userId" required>
                                 <option value="">Odaberite korisnika</option>
                             </select>
+                            <small class="form-text text-muted">Odaberite korisnika za kojeg unosite očitanje</small>
                         </div>
+                        
+                        <div id="userInfo" class="alert alert-info d-none">
+                            <strong>Informacije o korisniku:</strong>
+                            <div id="userDetails"></div>
+                        </div>
+                        
                         <div class="form-group">
-                            <label for="readingDate">Datum očitanja</label>
+                            <label for="readingDate">Datum očitanja <span class="text-danger">*</span></label>
                             <input type="date" class="form-control" id="readingDate" name="readingDate" required>
+                            <small class="form-text text-muted">Datum kada je izvršeno očitanje vodomjera</small>
                         </div>
+                        
                         <div class="form-group">
                             <label for="previousReading">Prethodno stanje (m³)</label>
-                            <input type="number" class="form-control" id="previousReading" name="previousReading" step="0.01" readonly>
+                            <input type="number" class="form-control" id="previousReading" name="previousReading" step="0.001" readonly>
+                            <small class="form-text text-muted">Automatski se učitava posljednje očitanje</small>
                         </div>
+                        
                         <div class="form-group">
-                            <label for="currentReading">Novo stanje (m³)</label>
-                            <input type="number" class="form-control" id="currentReading" name="currentReading" step="0.01" required>
+                            <label for="currentReading">Novo stanje (m³) <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="currentReading" name="currentReading" step="0.001" required min="0">
+                            <small class="form-text text-muted">Trenutno stanje na vodomjeru</small>
+                            <div class="invalid-feedback" id="readingError"></div>
                         </div>
+                        
                         <div class="form-group">
                             <label for="consumption">Potrošnja (m³)</label>
-                            <input type="number" class="form-control" id="consumption" name="consumption" step="0.01" readonly>
+                            <input type="number" class="form-control" id="consumption" name="consumption" step="0.001" readonly>
+                            <small class="form-text text-muted">Automatski se izračunava kao razlika novog i prethodnog stanja</small>
                         </div>
+                        
                         <div class="form-group">
                             <label for="notes">Napomene</label>
-                            <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                            <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Opcionalne napomene uz očitanje..."></textarea>
                         </div>
-                        <button type="submit" class="btn btn-primary">Spremi očitanje</button>
-                        <a href="/readings" class="btn btn-secondary">Odustani</a>
+                        
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary" id="submitBtn">
+                                <i class="fas fa-save"></i> Spremi očitanje
+                            </button>
+                            <a href="/readings" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Odustani
+                            </a>
+                        </div>
                     </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-info">Upute za unos</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success"></i> Odaberite korisnika iz padajuće liste</li>
+                        <li><i class="fas fa-check text-success"></i> Unesite datum očitanja</li>
+                        <li><i class="fas fa-check text-success"></i> Unesite novo stanje vodomjera</li>
+                        <li><i class="fas fa-check text-success"></i> Novo stanje mora biti veće od prethodnog</li>
+                        <li><i class="fas fa-check text-success"></i> Potrošnja se automatski izračunava</li>
+                    </ul>
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i> 
+                        <strong>Napomena:</strong> Novo očitanje mora biti veće od prethodnog očitanja!
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<script th:fragment="pageScript">
+$(document).ready(function() {
+    let lastReadingValue = null;
+    
+    // Učitaj korisnike prilikom učitavanja stranice
+    loadUsers();
+    
+    // Postavi današnji datum kao zadani
+    const today = new Date().toISOString().split('T')[0];
+    $('#readingDate').val(today);
+    
+    // Funkcija za učitavanje korisnika
+    function loadUsers() {
+        $.ajax({
+            url: '/readings/api/users',
+            type: 'GET',
+            success: function(users) {
+                const select = $('#userId');
+                select.empty();
+                select.append('<option value="">Odaberite korisnika</option>');
+                
+                users.forEach(function(user) {
+                    const option = $('<option></option>')
+                        .attr('value', user.id)
+                        .text(user.name + ' - ' + user.address + ' (Vodomjer: ' + user.meterNumber + ')');
+                    select.append(option);
+                });
+            },
+            error: function() {
+                alert('Greška prilikom učitavanja korisnika!');
+            }
+        });
+    }
+    
+    // Kada se promijeni korisnik
+    $('#userId').change(function() {
+        const userId = $(this).val();
+        
+        if (!userId) {
+            $('#userInfo').addClass('d-none');
+            $('#previousReading').val('');
+            $('#consumption').val('');
+            lastReadingValue = null;
+            return;
+        }
+        
+        // Dohvati posljednje očitanje za korisnika
+        $.ajax({
+            url: '/readings/api/user/' + userId + '/last-reading',
+            type: 'GET',
+            success: function(data) {
+                if (data.hasLastReading) {
+                    lastReadingValue = parseFloat(data.lastReadingValue);
+                    $('#previousReading').val(lastReadingValue);
+                    
+                    $('#userDetails').html(
+                        '<p class="mb-1">Posljednje očitanje: <strong>' + lastReadingValue + ' m³</strong></p>' +
+                        '<p class="mb-0">Datum posljednjeg očitanja: <strong>' + data.lastReadingDate + '</strong></p>'
+                    );
+                    $('#userInfo').removeClass('d-none');
+                    
+                    // Postavi minimum za novo očitanje
+                    $('#currentReading').attr('min', lastReadingValue);
+                } else {
+                    lastReadingValue = 0;
+                    $('#previousReading').val('0');
+                    $('#userDetails').html('<p class="mb-0">Nema prethodnih očitanja za ovog korisnika.</p>');
+                    $('#userInfo').removeClass('d-none');
+                    $('#currentReading').attr('min', '0');
+                }
+                
+                // Ponovno izračunaj potrošnju ako je već uneseno novo stanje
+                calculateConsumption();
+            },
+            error: function() {
+                alert('Greška prilikom dohvaćanja posljednjeg očitanja!');
+            }
+        });
+    });
+    
+    // Kada se promijeni novo stanje
+    $('#currentReading').on('input change', function() {
+        calculateConsumption();
+        validateReading();
+    });
+    
+    // Funkcija za izračunavanje potrošnje
+    function calculateConsumption() {
+        const currentReading = parseFloat($('#currentReading').val());
+        const previousReading = parseFloat($('#previousReading').val()) || 0;
+        
+        if (!isNaN(currentReading) && !isNaN(previousReading)) {
+            const consumption = currentReading - previousReading;
+            $('#consumption').val(consumption.toFixed(3));
+        } else {
+            $('#consumption').val('');
+        }
+    }
+    
+    // Funkcija za validaciju očitanja
+    function validateReading() {
+        const currentReading = parseFloat($('#currentReading').val());
+        const currentReadingInput = $('#currentReading');
+        const errorDiv = $('#readingError');
+        
+        if (isNaN(currentReading)) {
+            currentReadingInput.removeClass('is-invalid');
+            return true;
+        }
+        
+        if (lastReadingValue !== null && currentReading <= lastReadingValue) {
+            currentReadingInput.addClass('is-invalid');
+            errorDiv.text('Novo očitanje mora biti veće od prethodnog očitanja (' + lastReadingValue + ' m³)!');
+            return false;
+        } else {
+            currentReadingInput.removeClass('is-invalid');
+            return true;
+        }
+    }
+    
+    // Validacija forme prije slanja
+    $('#readingForm').submit(function(e) {
+        const userId = $('#userId').val();
+        const readingDate = $('#readingDate').val();
+        const currentReading = $('#currentReading').val();
+        
+        if (!userId) {
+            e.preventDefault();
+            alert('Molimo odaberite korisnika!');
+            $('#userId').focus();
+            return false;
+        }
+        
+        if (!readingDate) {
+            e.preventDefault();
+            alert('Molimo unesite datum očitanja!');
+            $('#readingDate').focus();
+            return false;
+        }
+        
+        if (!currentReading) {
+            e.preventDefault();
+            alert('Molimo unesite novo stanje vodomjera!');
+            $('#currentReading').focus();
+            return false;
+        }
+        
+        if (!validateReading()) {
+            e.preventDefault();
+            alert('Novo očitanje mora biti veće od prethodnog!');
+            $('#currentReading').focus();
+            return false;
+        }
+        
+        // Disable submit button to prevent double submission
+        $('#submitBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Spremanje...');
+    });
+});
+</script>
 </body>
 </html>
