@@ -7,6 +7,14 @@
 </head>
 <body>
 <div layout:fragment="content">
+    <!-- Success/Error Messages -->
+    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <span th:text="${successMessage}"></span>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+
     <!-- Page Heading -->
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800">Novo očitanje</h1>
@@ -20,40 +28,184 @@
                     <h6 class="m-0 font-weight-bold text-primary">Unos novog očitanja</h6>
                 </div>
                 <div class="card-body">
-                    <form method="post" action="/readings/new">
+                    <form method="post" action="/readings/new" th:object="${newReadingDTO}">
                         <div class="form-group">
                             <label for="userId">Korisnik</label>
-                            <select class="form-control" id="userId" name="userId" required>
+                            <select class="form-control" id="userId" name="userId" th:field="*{userId}" required>
                                 <option value="">Odaberite korisnika</option>
+                                <option th:each="user : ${users}" 
+                                        th:value="${user.id}" 
+                                        th:text="|${user.fullName} (${user.meterNumber})|">
+                                </option>
                             </select>
+                            <div th:if="${#fields.hasErrors('userId')}" class="text-danger">
+                                <small th:errors="*{userId}"></small>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label for="readingDate">Datum očitanja</label>
-                            <input type="date" class="form-control" id="readingDate" name="readingDate" required>
+                            <input type="date" class="form-control" id="readingDate" name="readingDate" 
+                                   th:field="*{readingDate}" required>
+                            <div th:if="${#fields.hasErrors('readingDate')}" class="text-danger">
+                                <small th:errors="*{readingDate}"></small>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label for="previousReading">Prethodno stanje (m³)</label>
-                            <input type="number" class="form-control" id="previousReading" name="previousReading" step="0.01" readonly>
+                            <input type="number" class="form-control" id="previousReading" name="previousReading" 
+                                   step="0.001" readonly placeholder="Automatski će se učitati...">
+                            <small class="form-text text-muted" id="lastReadingInfo"></small>
                         </div>
                         <div class="form-group">
                             <label for="currentReading">Novo stanje (m³)</label>
-                            <input type="number" class="form-control" id="currentReading" name="currentReading" step="0.01" required>
+                            <input type="number" class="form-control" id="currentReading" name="currentReading" 
+                                   th:field="*{currentReading}" step="0.001" required>
+                            <div th:if="${#fields.hasErrors('currentReading')}" class="text-danger">
+                                <small th:errors="*{currentReading}"></small>
+                            </div>
+                            <div id="readingValidationMessage" class="text-danger" style="display: none;">
+                                <small></small>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label for="consumption">Potrošnja (m³)</label>
-                            <input type="number" class="form-control" id="consumption" name="consumption" step="0.01" readonly>
+                            <input type="number" class="form-control" id="consumption" name="consumption" 
+                                   step="0.001" readonly placeholder="Automatski će se izračunati...">
                         </div>
                         <div class="form-group">
                             <label for="notes">Napomene</label>
-                            <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                            <textarea class="form-control" id="notes" name="notes" th:field="*{notes}" rows="3"></textarea>
                         </div>
-                        <button type="submit" class="btn btn-primary">Spremi očitanje</button>
+                        <button type="submit" class="btn btn-primary" id="submitBtn">Spremi očitanje</button>
                         <a href="/readings" class="btn btn-secondary">Odustani</a>
                     </form>
                 </div>
             </div>
         </div>
     </div>
+</div>
+
+<div layout:fragment="scripts">
+<script>
+$(document).ready(function() {
+    var $userSelect = $('#userId');
+    var $previousReading = $('#previousReading');
+    var $currentReading = $('#currentReading');
+    var $consumption = $('#consumption');
+    var $readingDate = $('#readingDate');
+    var $lastReadingInfo = $('#lastReadingInfo');
+    var $validationMessage = $('#readingValidationMessage');
+    var $submitBtn = $('#submitBtn');
+
+    // Set today's date as default
+    $readingDate.val(new Date().toISOString().split('T')[0]);
+
+    // When user is selected, load previous reading
+    $userSelect.on('change', function() {
+        var userId = $(this).val();
+        if (userId) {
+            loadPreviousReading(userId);
+        } else {
+            clearPreviousReading();
+        }
+    });
+
+    // When current reading or date changes, validate and calculate consumption
+    $currentReading.add($readingDate).on('input change', function() {
+        calculateConsumption();
+        validateReading();
+    });
+
+    function loadPreviousReading(userId) {
+        $.ajax({
+            url: '/readings/api/user/' + userId + '/latest-reading',
+            type: 'GET',
+            success: function(data) {
+                if (data.hasReading) {
+                    $previousReading.val(data.previousReading);
+                    $lastReadingInfo.text('Poslednje očitanje: ' + data.lastReadingDate);
+                } else {
+                    $previousReading.val('0.000');
+                    $lastReadingInfo.text('Nema prethodnih očitanja');
+                }
+                calculateConsumption();
+                validateReading();
+            },
+            error: function(xhr) {
+                console.error('Error loading previous reading:', xhr.responseText);
+                $previousReading.val('');
+                $lastReadingInfo.text('Greška pri učitavanju prethodnog očitanja');
+            }
+        });
+    }
+
+    function clearPreviousReading() {
+        $previousReading.val('');
+        $consumption.val('');
+        $lastReadingInfo.text('');
+        $validationMessage.hide();
+    }
+
+    function calculateConsumption() {
+        var previous = parseFloat($previousReading.val()) || 0;
+        var current = parseFloat($currentReading.val()) || 0;
+        
+        if (current > 0 && previous >= 0) {
+            var consumption = current - previous;
+            $consumption.val(consumption.toFixed(3));
+        } else {
+            $consumption.val('');
+        }
+    }
+
+    function validateReading() {
+        var userId = $userSelect.val();
+        var currentReading = $currentReading.val();
+        var readingDate = $readingDate.val();
+
+        if (!userId || !currentReading || !readingDate) {
+            $validationMessage.hide();
+            $submitBtn.prop('disabled', false);
+            return;
+        }
+
+        $.ajax({
+            url: '/readings/api/validate-reading',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                userId: userId,
+                newReading: currentReading,
+                readingDate: readingDate
+            }),
+            success: function(data) {
+                if (data.valid) {
+                    $validationMessage.hide();
+                    $submitBtn.prop('disabled', false);
+                    $currentReading.removeClass('is-invalid').addClass('is-valid');
+                } else {
+                    $validationMessage.find('small').text(data.message || 'Neispravno očitanje');
+                    $validationMessage.show();
+                    $submitBtn.prop('disabled', true);
+                    $currentReading.removeClass('is-valid').addClass('is-invalid');
+                }
+            },
+            error: function(xhr) {
+                console.error('Error validating reading:', xhr.responseText);
+                $validationMessage.find('small').text('Greška pri provjeri očitanja');
+                $validationMessage.show();
+                $submitBtn.prop('disabled', true);
+                $currentReading.removeClass('is-valid').addClass('is-invalid');
+            }
+        });
+    }
+
+    // Initialize if user is already selected (in case of form errors)
+    if ($userSelect.val()) {
+        loadPreviousReading($userSelect.val());
+    }
+});
+</script>
 </div>
 </body>
 </html>
