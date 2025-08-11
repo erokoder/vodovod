@@ -35,13 +35,9 @@ public class ReadingsController {
 
     @GetMapping
     public String index(Model model) {
-        model.addAttribute("pageTitle", "Očitanja");
-        model.addAttribute("activeMenu", "readings");
-
-        // Učitaj sva očitanja (najnovija prva)
         List<MeterReading> readings = meterReadingService.getAllReadings();
+        model.addAttribute("pageTitle", "Očitanja");
         model.addAttribute("readings", readings);
-
         return "readings/index";
     }
     

@@ -7,6 +7,14 @@
 </head>
 <body>
 <div layout:fragment="content">
+    <!-- Success/Error Messages -->
+    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <span th:text="${successMessage}"></span>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+
     <!-- Page Heading -->
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800">Očitanja</h1>
@@ -37,19 +45,21 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr th:each="reading : ${readings}" th:unless="${#lists.isEmpty(readings)}">
-                                    <td th:text="${reading.id}">1</td>
-                                    <td th:text="${reading.user.fullName}">Ime Prezime</td>
-                                    <td th:text="${reading.readingDate}">2023-01-01</td>
-                                    <td th:text="${reading.previousReadingValue}">0.000</td>
-                                    <td th:text="${reading.readingValue}">10.000</td>
-                                    <td th:text="${reading.consumption}">10.000</td>
-                                    <td>
-                                        <!-- Placeholder for future actions (edit/delete) -->
-                                    </td>
-                                </tr>
                                 <tr th:if="${#lists.isEmpty(readings)}">
                                     <td colspan="7" class="text-center">Nema podataka za prikaz</td>
+                                </tr>
+                                <tr th:each="reading : ${readings}">
+                                    <td th:text="${reading.id}"></td>
+                                    <td th:text="${reading.user.fullName + ' (' + reading.user.meterNumber + ')'}"></td>
+                                    <td th:text="${#temporals.format(reading.readingDate, 'dd.MM.yyyy')}"></td>
+                                    <td class="text-right" th:text="${#numbers.formatDecimal(reading.previousReadingValue, 1, 3) + ' m³'}"></td>
+                                    <td class="text-right" th:text="${#numbers.formatDecimal(reading.readingValue, 1, 3) + ' m³'}"></td>
+                                    <td class="text-right" th:text="${#numbers.formatDecimal(reading.consumption, 1, 3) + ' m³'}"></td>
+                                    <td class="text-center">
+                                        <a th:href="@{'/readings/' + ${reading.id}}" class="btn btn-info btn-sm" title="Pregled detalja">
+                                            <i class="bi bi-eye"></i> Pregled
+                                        </a>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
@@ -58,6 +68,21 @@
             </div>
         </div>
     </div>
+</div>
+
+<div layout:fragment="scripts">
+<script>
+$(document).ready(function() {
+    $('#dataTable').DataTable({
+        "language": {
+            "url": "//cdn.datatables.net/plug-ins/1.10.19/i18n/Croatian.json"
+        },
+        "order": [[ 0, "desc" ]],
+        "pageLength": 25,
+        "responsive": true
+    });
+});
+</script>
 </div>
 </body>
 </html>

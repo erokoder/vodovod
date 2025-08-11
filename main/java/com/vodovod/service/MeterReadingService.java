@@ -88,11 +88,13 @@ public class MeterReadingService {
     }
 
     /**
-     * Dohvaća sva očitanja sortirana po datumu
+     * Dohvaća sva očitanja sortirana po datumu (najnovija prva)
      */
     public List<MeterReading> getAllReadings() {
-        // Vraća sva očitanja sortirana po datumu očitanja (najnovija prva)
-        return meterReadingRepository.findAll(Sort.by(Sort.Direction.DESC, "readingDate"));
+        return meterReadingRepository.findAll()
+                .stream()
+                .sorted((r1, r2) -> r2.getReadingDate().compareTo(r1.getReadingDate()))
+                .toList();
     }
 
     /**
