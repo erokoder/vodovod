@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="hr" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main}">
+<head>
+    <title>Novo očitanje</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Novo očitanje</h1>
+    </div>
+
+    <!-- Content Row -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Unos novog očitanja</h6>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="/readings/new">
+                        <div class="form-group">
+                            <label for="userId">Korisnik</label>
+                            <select class="form-control" id="userId" name="userId" required>
+                                <option value="">Odaberite korisnika</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="readingDate">Datum očitanja</label>
+                            <input type="date" class="form-control" id="readingDate" name="readingDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="previousReading">Prethodno stanje (m³)</label>
+                            <input type="number" class="form-control" id="previousReading" name="previousReading" step="0.01" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="currentReading">Novo stanje (m³)</label>
+                            <input type="number" class="form-control" id="currentReading" name="currentReading" step="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="consumption">Potrošnja (m³)</label>
+                            <input type="number" class="form-control" id="consumption" name="consumption" step="0.01" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="notes">Napomene</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Spremi očitanje</button>
+                        <a href="/readings" class="btn btn-secondary">Odustani</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
