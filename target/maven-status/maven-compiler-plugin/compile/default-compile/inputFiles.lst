@@ -4,6 +4,7 @@
 /workspace/main/java/com/vodovod/repository/UserRepository.java
 /workspace/main/java/com/vodovod/model/BillStatus.java
 /workspace/main/java/com/vodovod/controller/DashboardController.java
+/workspace/main/java/com/vodovod/controller/ReadingController.java
 /workspace/main/java/com/vodovod/VodovodManagementApplication.java
 /workspace/main/java/com/vodovod/service/UserDetailsServiceImpl.java
 /workspace/main/java/com/vodovod/controller/BillsController.java
@@ -14,6 +15,7 @@
 /workspace/main/java/com/vodovod/service/DashboardService.java
 /workspace/main/java/com/vodovod/model/Bill.java
 /workspace/main/java/com/vodovod/controller/AuthController.java
+/workspace/main/java/com/vodovod/controller/BillController.java
 /workspace/main/java/com/vodovod/controller/ReadingsController.java
 /workspace/main/java/com/vodovod/model/Payment.java
 /workspace/main/java/com/vodovod/repository/SystemSettingsRepository.java
@@ -22,6 +24,7 @@
 /workspace/main/java/com/vodovod/controller/SettingsController.java
 /workspace/main/java/com/vodovod/model/User.java
 /workspace/main/java/com/vodovod/config/SecurityConfig.java
+/workspace/main/java/com/vodovod/controller/PaymentController.java
 /workspace/main/java/com/vodovod/dto/DashboardStats.java
 /workspace/main/java/com/vodovod/model/Role.java
 /workspace/main/java/com/vodovod/repository/BillRepository.java
