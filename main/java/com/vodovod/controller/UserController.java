@@ -66,11 +66,11 @@ public class UserController {
                 user.setPassword(userService.generateRandomPassword());
             }
             
-            userService.createUser(user);
+            User saved = userService.createUser(user);
             redirectAttributes.addFlashAttribute("successMessage", 
-                "Korisnik " + user.getFullName() + " je uspješno kreiran.");
+                "Korisnik " + saved.getFullName() + " je uspješno kreiran. Dodajte prvo očitanje.");
                 
-            return "redirect:/users";
+            return "redirect:/readings/new?userId=" + saved.getId();
             
         } catch (Exception e) {
             model.addAttribute("pageTitle", "Novi Korisnik");

@@ -36,13 +36,19 @@ public class ReadingsController {
     @GetMapping
     public String index(Model model) {
         model.addAttribute("pageTitle", "Očitanja");
+        model.addAttribute("activeMenu", "readings");
+        model.addAttribute("readings", meterReadingService.getAllReadings());
         return "readings/index";
     }
     
     @GetMapping("/new")
-    public String newReading(Model model) {
+    public String newReading(@RequestParam(value = "userId", required = false) Long userId, Model model) {
         model.addAttribute("pageTitle", "Novo očitanje");
-        model.addAttribute("newReadingDTO", new NewReadingDTO());
+        NewReadingDTO dto = new NewReadingDTO();
+        if (userId != null) {
+            dto.setUserId(userId);
+        }
+        model.addAttribute("newReadingDTO", dto);
         
         // Dodaj listu korisnika za dropdown
         List<User> users = userService.findByRoleAndEnabledTrue(Role.USER);

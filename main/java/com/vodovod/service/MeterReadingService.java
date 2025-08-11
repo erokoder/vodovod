@@ -42,7 +42,7 @@ public class MeterReadingService {
      * Dohvaća najnovije očitanje za korisnika
      */
     public Optional<MeterReading> getLatestReadingByUser(User user) {
-        return meterReadingRepository.findLatestByUser(user);
+        return meterReadingRepository.findTopByUserOrderByReadingDateDesc(user);
     }
 
     /**
