@@ -34,4 +34,7 @@ public interface MeterReadingRepository extends JpaRepository<MeterReading, Long
     
     @Query("SELECT mr FROM MeterReading mr WHERE mr.readingDate BETWEEN :startDate AND :endDate ORDER BY mr.readingDate DESC")
     List<MeterReading> findByReadingDateBetween(LocalDate startDate, LocalDate endDate);
+
+    @Query("SELECT mr FROM MeterReading mr JOIN mr.user u ORDER BY u.lastName ASC, u.firstName ASC, mr.readingDate DESC")
+    List<MeterReading> findAllOrderByUserNameAndDateDesc();
 }
