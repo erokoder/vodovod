@@ -42,7 +42,7 @@ public class DataInitializer implements CommandLineRunner {
         }
 
         // Kreiraj sistemske postavke ako ne postoje
-        if (systemSettingsRepository.findFirst().isEmpty()) {
+        if (systemSettingsRepository.findTopByOrderByIdAsc().isEmpty()) {
             SystemSettings settings = new SystemSettings();
             settings.setWaterPricePerM3(new BigDecimal("2.50"));
             settings.setFixedFee(new BigDecimal("15.00"));
@@ -54,6 +54,8 @@ public class DataInitializer implements CommandLineRunner {
             settings.setCompanyEmail("info@vodovod.hr");
             settings.setBillDueDays(30);
             settings.setUpdatedBy("sistem");
+            // Default cijena električne energije
+            settings.setElectricityPricePerKWh(new BigDecimal("0.20"));
             
             systemSettingsRepository.save(settings);
             System.out.println("✓ Kreirane početne sistemske postavke");
