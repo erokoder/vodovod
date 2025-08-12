@@ -50,4 +50,7 @@ public interface BillRepository extends JpaRepository<Bill, Long> {
 
     @Query("SELECT COALESCE(SUM(b.paidAmount), 0) FROM Bill b WHERE b.user = :user AND b.status != 'CANCELLED'")
     BigDecimal sumPaidAmountByUser(User user);
+
+    @Query("SELECT b FROM Bill b WHERE b.user = :user AND b.status IN ('PENDING','PARTIALLY_PAID','OVERDUE') ORDER BY b.issueDate ASC")
+    List<Bill> findOpenBillsByUser(User user);
 }
