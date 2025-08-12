@@ -35,6 +35,17 @@
                            th:value="${settings.accountNumber}" placeholder="npr. HR1234567890123456789" required>
                     <div class="form-text">Ovaj broj računa bit će prikazan na ispisu računa.</div>
                 </div>
+
+                <div class="col-md-6">
+                    <label for="companyName" class="form-label">Naziv primatelja</label>
+                    <input type="text" class="form-control" id="companyName" name="companyName"
+                           th:value="${settings.companyName}" placeholder="npr. Udruga Vodovod Bašćina">
+                </div>
+                <div class="col-md-6">
+                    <label for="companyAddress" class="form-label">Adresa primatelja</label>
+                    <input type="text" class="form-control" id="companyAddress" name="companyAddress"
+                           th:value="${settings.companyAddress}" placeholder="npr. Ulica 1, 88320 Ljubuški">
+                </div>
                 
                 <div class="col-12">
                     <div class="form-check form-switch mb-3">
