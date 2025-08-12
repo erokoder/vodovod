@@ -39,7 +39,8 @@ public class BillsController {
     @Autowired
     private SettingsService settingsService;
 
-    private final BillPdfService billPdfService = new BillPdfService();
+    @Autowired
+    private BillPdfService billPdfService;
 
     @GetMapping
     public String index(@RequestParam(value = "userId", required = false) Long userId, Model model) {
