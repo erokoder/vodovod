@@ -29,7 +29,6 @@
                 <table class="table table-bordered table-hover">
                     <thead class="table-light">
                         <tr>
-                            <th>ID</th>
                             <th>Korisničko ime</th>
                             <th>Ime i prezime</th>
                             <th>Email</th>
@@ -42,13 +41,12 @@
                     </thead>
                     <tbody>
                         <tr th:if="${#lists.isEmpty(users)}">
-                            <td colspan="9" class="text-center text-muted">
+                            <td colspan="8" class="text-center text-muted">
                                 <i class="bi bi-inbox"></i>
                                 Nema korisnika u sustavu.
                             </td>
                         </tr>
                         <tr th:each="user : ${users}">
-                            <td th:text="${user.id}">#1</td>
                             <td>
                                 <strong th:text="${user.username}">username</strong>
                             </td>
