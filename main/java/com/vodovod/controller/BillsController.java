@@ -6,6 +6,8 @@ import com.vodovod.model.User;
 import com.vodovod.repository.BillRepository;
 import com.vodovod.service.BillService;
 import com.vodovod.service.UserService;
+import com.vodovod.service.SettingsService;
+import com.vodovod.service.BillPdfService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -16,6 +18,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 
 @Controller
 @RequestMapping("/bills")
@@ -30,6 +35,11 @@ public class BillsController {
 
     @Autowired
     private BillService billService;
+
+    @Autowired
+    private SettingsService settingsService;
+
+    private final BillPdfService billPdfService = new BillPdfService();
 
     @GetMapping
     public String index(@RequestParam(value = "userId", required = false) Long userId, Model model) {
@@ -63,5 +73,16 @@ public class BillsController {
     public Map<String, Object> generate(@RequestBody List<BillPreviewDTO> previews, Authentication authentication) {
         List<Bill> saved = billService.generateBillsFromPreview(previews, authentication.getName());
         return Map.of("status", "ok", "count", saved.size());
+    }
+
+    @GetMapping("/{id}/pdf")
+    public ResponseEntity<byte[]> downloadPdf(@PathVariable("id") Long id) {
+        Bill bill = billRepository.findById(id).orElseThrow();
+        byte[] pdf = billPdfService.createBillPdf(bill, settingsService.getCurrentSettingsOrNew());
+        String filename = (bill.getBillNumber() != null ? bill.getBillNumber().replace('/', '-') : ("racun-" + id)) + ".pdf";
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdf);
     }
 }
