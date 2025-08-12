@@ -44,4 +44,10 @@ public interface BillRepository extends JpaRepository<Bill, Long> {
     
     @Query("SELECT SUM(b.totalAmount) FROM Bill b WHERE b.issueDate BETWEEN :startDate AND :endDate")
     BigDecimal sumTotalAmountByIssueDateBetween(LocalDate startDate, LocalDate endDate);
+
+    @Query("SELECT COALESCE(SUM(b.totalAmount), 0) FROM Bill b WHERE b.user = :user AND b.status != 'CANCELLED'")
+    BigDecimal sumTotalAmountByUser(User user);
+
+    @Query("SELECT COALESCE(SUM(b.paidAmount), 0) FROM Bill b WHERE b.user = :user AND b.status != 'CANCELLED'")
+    BigDecimal sumPaidAmountByUser(User user);
 }

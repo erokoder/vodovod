@@ -186,6 +186,49 @@
             </div>
         </div>
     </div>
+
+    <!-- User Balances -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="bi bi-people"></i>
+                        Stanje po korisnicima
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Korisnik</th>
+                                    <th>Broj vodomjera</th>
+                                    <th class="text-end">Iznos</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="ub : ${stats.userBalances}">
+                                    <td>
+                                        <a th:href="@{'/users/' + ${ub.userId}}" th:text="${ub.fullName}">Ime Prezime</a>
+                                    </td>
+                                    <td th:text="${ub.meterNumber}">-</td>
+                                    <td class="text-end" th:text="${#numbers.formatDecimal(ub.amount, 1, 2)} + ' KM'">0.00 KM</td>
+                                    <td>
+                                        <span th:classappend="${ub.status == 'Dužan' ? 'badge bg-warning text-dark' : (ub.status == 'Pretplaćen' ? 'badge bg-info' : 'badge bg-success') }" th:text="${ub.status}">Status</span>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(stats.userBalances)}">
+                                    <td colspan="4" class="text-center text-muted">Nema podataka</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div layout:fragment="scripts">
