@@ -1,14 +1,18 @@
 package com.vodovod.service;
 
 import com.vodovod.dto.DashboardStats;
+import com.vodovod.dto.UserBalanceDTO;
 import com.vodovod.model.BillStatus;
 import com.vodovod.model.Role;
+import com.vodovod.model.User;
 import com.vodovod.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class DashboardService {
@@ -59,6 +63,38 @@ public class DashboardService {
         stats.setReadingsThisMonth(
             meterReadingRepository.countByReadingDateBetween(startOfMonth, endOfMonth)
         );
+
+        // Balansi korisnika
+        List<UserBalanceDTO> userBalances = new ArrayList<>();
+        userRepository.findByRoleAndEnabledTrue(Role.USER).forEach(user -> {
+            BigDecimal totalByUser = billRepository.sumTotalAmountByUser(user);
+            BigDecimal paidByUser = billRepository.sumPaidAmountByUser(user);
+            BigDecimal balance = (totalByUser != null ? totalByUser : BigDecimal.ZERO)
+                    .subtract(paidByUser != null ? paidByUser : BigDecimal.ZERO);
+
+            String status;
+            BigDecimal displayAmount;
+            int cmp = balance.compareTo(BigDecimal.ZERO);
+            if (cmp > 0) {
+                status = "Dužan";
+                displayAmount = balance;
+            } else if (cmp < 0) {
+                status = "Pretplaćen";
+                displayAmount = balance.abs();
+            } else {
+                status = "Plaćeno sve";
+                displayAmount = BigDecimal.ZERO;
+            }
+
+            userBalances.add(new UserBalanceDTO(
+                    user.getId(),
+                    user.getFullName(),
+                    user.getMeterNumber(),
+                    displayAmount,
+                    status
+            ));
+        });
+        stats.setUserBalances(userBalances);
 
         return stats;
     }

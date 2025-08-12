@@ -1,6 +1,7 @@
 package com.vodovod.dto;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 public class DashboardStats {
     private long totalUsers;
@@ -13,6 +14,7 @@ public class DashboardStats {
     private BigDecimal pendingRevenue;
     private long totalReadings;
     private long readingsThisMonth;
+    private List<UserBalanceDTO> userBalances;
     
     // Constructors
     public DashboardStats() {}
@@ -96,5 +98,13 @@ public class DashboardStats {
     
     public void setReadingsThisMonth(long readingsThisMonth) {
         this.readingsThisMonth = readingsThisMonth;
+    }
+
+    public List<UserBalanceDTO> getUserBalances() {
+        return userBalances;
+    }
+
+    public void setUserBalances(List<UserBalanceDTO> userBalances) {
+        this.userBalances = userBalances;
     }
 }
