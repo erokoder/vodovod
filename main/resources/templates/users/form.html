@@ -28,6 +28,7 @@
                 <div class="card-body">
                     <form th:action="${user.id != null ? '/users/' + user.id + '/edit' : '/users/new'}" 
                           th:object="${user}" method="post">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                         
                         <!-- Basic Information -->
                         <div class="row">

@@ -235,6 +235,7 @@
                         
                         <form th:if="${user.enabled}" th:action="@{'/users/' + ${user.id} + '/delete'}" method="post"
                               onsubmit="return confirm('Jeste li sigurni da želite onemogućiti ovog korisnika?')">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                             <button type="submit" class="btn btn-warning w-100">
                                 <i class="bi bi-x-circle"></i>
                                 Onemogući korisnika
@@ -242,6 +243,7 @@
                         </form>
                         
                         <form th:unless="${user.enabled}" th:action="@{'/users/' + ${user.id} + '/enable'}" method="post">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                             <button type="submit" class="btn btn-success w-100">
                                 <i class="bi bi-check-circle"></i>
                                 Omogući korisnika
