@@ -5,6 +5,7 @@ import com.vodovod.model.SystemSettings;
 import com.vodovod.model.User;
 import com.vodovod.repository.SystemSettingsRepository;
 import com.vodovod.repository.UserRepository;
+import com.vodovod.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,6 +24,9 @@ public class DataInitializer implements CommandLineRunner {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private UserService userService;
 
     @Override
     public void run(String... args) throws Exception {
@@ -68,14 +72,14 @@ public class DataInitializer implements CommandLineRunner {
             user.setFirstName("Marko");
             user.setLastName("Marković");
             user.setEmail("marko@example.com");
-            user.setPassword(passwordEncoder.encode("user123"));
+            user.setPassword("user123");
             user.setRole(Role.USER);
             user.setMeterNumber("VM001");
             user.setAddress("Test ulica 1, Zagreb");
             user.setPhoneNumber("098/123-456");
             user.setEnabled(true);
             
-            userRepository.save(user);
+            userService.createUser(user);
             System.out.println("✓ Kreiran test korisnik (username: user1, password: user123, meter: VM001)");
         }
     }
