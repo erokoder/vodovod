@@ -60,7 +60,8 @@ public class BillsController {
 
     @PostMapping("/api/generate")
     @ResponseBody
-    public List<Bill> generate(@RequestBody List<BillPreviewDTO> previews, Authentication authentication) {
-        return billService.generateBillsFromPreview(previews, authentication.getName());
+    public Map<String, Object> generate(@RequestBody List<BillPreviewDTO> previews, Authentication authentication) {
+        List<Bill> saved = billService.generateBillsFromPreview(previews, authentication.getName());
+        return Map.of("status", "ok", "count", saved.size());
     }
 }
