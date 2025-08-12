@@ -38,8 +38,29 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
+                                <tr th:if="${#lists.isEmpty(payments)}">
                                     <td colspan="8" class="text-center">Nema podataka za prikaz</td>
+                                </tr>
+                                <tr th:each="p : ${payments}">
+                                    <td th:text="${p.id}">-</td>
+                                    <td>
+                                        <span th:text="${p.bill != null ? p.bill.billNumber : '-'}"></span>
+                                    </td>
+                                    <td th:text="${p.user != null ? p.user.fullName : '-'}">-</td>
+                                    <td th:text="${p.paymentDate}">-</td>
+                                    <td th:text="${#numbers.formatDecimal(p.amount, 1, 'COMMA', 2, 'POINT')}">-</td>
+                                    <td th:text="${p.paymentMethod != null ? p.paymentMethod : '-'}">-</td>
+                                    <td>
+                                        <span th:if="${p.bill == null}" class="badge bg-info text-dark">Avans</span>
+                                        <span th:if="${p.bill != null}" class="badge bg-secondary">Za račun</span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a th:if="${p.bill != null}" th:href="@{'/bills/' + ${p.bill.id} + '/pdf'}" class="btn btn-outline-secondary" title="Račun PDF">
+                                                <i class="bi bi-filetype-pdf"></i>
+                                            </a>
+                                        </div>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
