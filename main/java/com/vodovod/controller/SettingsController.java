@@ -32,11 +32,11 @@ public class SettingsController {
     }
 
     @PostMapping
-    public String updateSettings(@RequestParam(name = "electricityPricePerKWh") BigDecimal electricityPricePerKWh,
+    public String updateSettings(@RequestParam(name = "waterPricePerM3") BigDecimal waterPricePerM3,
                                  @RequestParam(name = "fixedFee") BigDecimal fixedFee,
                                  @RequestParam(name = "useFixedFee", defaultValue = "false") boolean useFixedFee,
                                  RedirectAttributes redirectAttributes) {
-        settingsService.updateSettings(electricityPricePerKWh, fixedFee, useFixedFee);
+        settingsService.updateSettings(waterPricePerM3, fixedFee, useFixedFee);
         redirectAttributes.addFlashAttribute("successMessage", "Postavke su uspješno spremljene.");
         return "redirect:/settings";
     }

@@ -17,9 +17,9 @@ public class SettingsService {
         return systemSettingsRepository.findTopByOrderByIdAsc().orElseGet(SystemSettings::new);
     }
 
-    public SystemSettings updateSettings(BigDecimal electricityPricePerKWh, BigDecimal fixedFee, boolean useFixedFee) {
+    public SystemSettings updateSettings(BigDecimal waterPricePerM3, BigDecimal fixedFee, boolean useFixedFee) {
         SystemSettings settings = systemSettingsRepository.findTopByOrderByIdAsc().orElseGet(SystemSettings::new);
-        settings.setElectricityPricePerKWh(electricityPricePerKWh);
+        settings.setWaterPricePerM3(waterPricePerM3);
         settings.setFixedFee(fixedFee);
         settings.setUseFixedFee(useFixedFee);
         return systemSettingsRepository.save(settings);
