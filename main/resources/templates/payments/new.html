@@ -46,10 +46,9 @@
                         <div class="form-group">
                             <label for="paymentMethod">Način plaćanja</label>
                             <select class="form-control" id="paymentMethod" name="paymentMethod" required>
-                                <option value="">Odaberite način plaćanja</option>
+                                <!-- Default: Bankovni prijenos -->
+                                <option value="BANK_TRANSFER" selected>Bankovni prijenos</option>
                                 <option value="CASH">Gotovina</option>
-                                <option value="BANK_TRANSFER">Bankovni prijenos</option>
-                                <option value="CARD">Kartica</option>
                             </select>
                         </div>
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
@@ -65,6 +64,19 @@
 (function() {
     const userSelect = document.getElementById('userId');
     const billSelect = document.getElementById('billId');
+    const amountInput = document.getElementById('amount');
+    const paymentDateInput = document.getElementById('paymentDate');
+
+    // Set today's date by default
+    function setToday() {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        paymentDateInput.value = `${yyyy}-${mm}-${dd}`;
+    }
+    setToday();
+
     function clearBills() {
         billSelect.innerHTML = '';
         const opt = document.createElement('option');
@@ -72,8 +84,14 @@
         opt.textContent = 'Unaprijed uplata (bez računa)';
         billSelect.appendChild(opt);
     }
+
+    function clearAmount() {
+        amountInput.value = '';
+    }
+
     async function loadBills(userId) {
         clearBills();
+        clearAmount();
         if (!userId) return;
         try {
             const res = await fetch(`/payments/open-bills?userId=${userId}`);
@@ -81,17 +99,35 @@
             const data = await res.json();
             data.forEach(b => {
                 const o = document.createElement('option');
-                const remaining = (Number(b.remaining) || 0).toFixed(2);
+                const remaining = Number(b.remaining || 0);
                 o.value = b.id;
-                o.textContent = `${b.billNumber || ('Račun #' + b.id)} - preostalo ${remaining} KM`;
+                o.textContent = `${b.billNumber || ('Račun #' + b.id)} - preostalo ${remaining.toFixed(2)} KM`;
+                o.dataset.remaining = remaining.toFixed(2);
                 billSelect.appendChild(o);
             });
         } catch (e) {
             console.error(e);
         }
     }
+
+    // When user changes, reload bills and reset amount
     userSelect.addEventListener('change', (e) => {
         loadBills(e.target.value);
+    });
+
+    // When bill is chosen, auto-fill amount with remaining; if prepayment selected, clear amount
+    billSelect.addEventListener('change', (e) => {
+        const selectedOption = billSelect.options[billSelect.selectedIndex];
+        if (!selectedOption || !selectedOption.value) {
+            clearAmount();
+            amountInput.placeholder = 'Unesite iznos pretplate';
+            return;
+        }
+        const remaining = selectedOption.dataset.remaining;
+        if (remaining) {
+            amountInput.value = parseFloat(remaining).toFixed(2);
+            amountInput.placeholder = '';
+        }
     });
 })();
 </script>
