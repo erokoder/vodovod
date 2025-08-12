@@ -6,6 +6,7 @@ import com.vodovod.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -53,4 +54,8 @@ public interface BillRepository extends JpaRepository<Bill, Long> {
 
     @Query("SELECT b FROM Bill b WHERE b.user = :user AND b.status IN ('PENDING','PARTIALLY_PAID') ORDER BY b.issueDate ASC")
     List<Bill> findOpenBillsByUser(User user);
+
+    // Returns the maximum numeric prefix (x) in bill_number formatted as x/YYYY for the given year
+    @Query(value = "SELECT COALESCE(MAX(CAST(SUBSTRING(b.bill_number, 1, LOCATE('/', b.bill_number) - 1) AS INT)), 0) FROM bills b WHERE b.bill_number LIKE CONCAT('%/', :year)", nativeQuery = true)
+    int findMaxSequenceForYear(@Param("year") int year);
 }

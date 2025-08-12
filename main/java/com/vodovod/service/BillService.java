@@ -16,7 +16,9 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -96,6 +98,7 @@ public class BillService {
     public List<Bill> generateBillsFromPreview(List<BillPreviewDTO> previews, String createdBy) {
         SystemSettings settings = settingsService.getCurrentSettingsOrNew();
         List<Bill> saved = new ArrayList<>();
+        Map<Integer, Integer> yearToLastSequence = new HashMap<>();
         for (BillPreviewDTO dto : previews) {
             Optional<User> userOpt = userService.getUserById(dto.getUserId());
             if (userOpt.isEmpty()) {
@@ -119,6 +122,17 @@ public class BillService {
             bill.setCreatedBy(createdBy);
             bill.setAccountNumber(settings.getAccountNumber());
             bill.setPaidAmount(java.math.BigDecimal.ZERO);
+
+            // Generate bill number in the form x/YYYY where x increments per year
+            int year = bill.getIssueDate() != null ? bill.getIssueDate().getYear() : LocalDate.now().getYear();
+            Integer lastSeq = yearToLastSequence.get(year);
+            if (lastSeq == null) {
+                lastSeq = billRepository.findMaxSequenceForYear(year);
+            }
+            int nextSeq = lastSeq + 1;
+            yearToLastSequence.put(year, nextSeq);
+            bill.setBillNumber(nextSeq + "/" + year);
+
             billRepository.save(bill);
 
             // Mark all readings up to endReadingId as billed for this user
