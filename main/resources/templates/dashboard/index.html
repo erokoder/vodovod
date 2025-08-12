@@ -94,7 +94,7 @@
             <div class="card shadow mb-4">
                 <div class="card-header py-3">
                     <h6 class="m-0 font-weight-bold text-primary">
-                        <i class="bi bi-currency-euro"></i>
+                                                 <i class="bi bi-cash-coin"></i>
                         Financijski Pregled
                     </h6>
                 </div>
@@ -103,13 +103,13 @@
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <small class="text-muted">Ukupni Prihodi</small>
-                                <div class="h4 text-success" th:text="${#numbers.formatDecimal(stats.totalRevenue, 1, 2)} + ' €'">0.00 €</div>
+                                <div class="h4 text-success" th:text="${#numbers.formatDecimal(stats.totalRevenue, 1, 2)} + ' KM'">0.00 KM</div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <small class="text-muted">Nenaplaćeno</small>
-                                <div class="h4 text-warning" th:text="${#numbers.formatDecimal(stats.pendingRevenue, 1, 2)} + ' €'">0.00 €</div>
+                                <div class="h4 text-warning" th:text="${#numbers.formatDecimal(stats.pendingRevenue, 1, 2)} + ' KM'">0.00 KM</div>
                             </div>
                         </div>
                     </div>
