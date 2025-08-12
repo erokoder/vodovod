@@ -132,6 +132,12 @@
   const btnConfirm = document.getElementById('btn-confirm-generate');
   let previews = [];
 
+  // CSRF support for fetch requests
+  const csrfTokenEl = document.querySelector('meta[name="_csrf"]');
+  const csrfHeaderEl = document.querySelector('meta[name="_csrf_header"]');
+  const csrfToken = csrfTokenEl ? csrfTokenEl.getAttribute('content') : null;
+  const csrfHeader = csrfHeaderEl ? csrfHeaderEl.getAttribute('content') : null;
+
   function formatMoney(n) { try { return new Intl.NumberFormat('hr-HR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n); } catch(e) { return n; } }
 
   btn.addEventListener('click', function() {
@@ -174,12 +180,14 @@
 
   btnConfirm.addEventListener('click', function() {
     if (!previews || previews.length === 0) return;
+    const headers = { 'Content-Type': 'application/json' };
+    if (csrfHeader && csrfToken) { headers[csrfHeader] = csrfToken; }
     fetch('/bills/api/generate', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: headers,
       body: JSON.stringify(previews)
     })
-      .then(r => r.json())
+      .then(r => { if (!r.ok) throw new Error('Request failed'); return r.json(); })
       .then(() => { window.location.reload(); })
       .catch(() => { alert('Greška pri spremanju računa.'); });
   });
