@@ -103,4 +103,11 @@ public class MeterReadingService {
     public List<MeterReading> getReadingsWithoutBill() {
         return meterReadingRepository.findReadingsWithoutBill();
     }
+
+    /**
+     * Dohvaća očitanje po ID-u
+     */
+    public Optional<MeterReading> findById(Long id) {
+        return meterReadingRepository.findById(id);
+    }
 }

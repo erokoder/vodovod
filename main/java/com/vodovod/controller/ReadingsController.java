@@ -111,6 +111,18 @@ public class ReadingsController {
     }
 
     /**
+     * Detaljni prikaz pojedinačnog očitanja
+     */
+    @GetMapping("/{id}")
+    public String view(@PathVariable Long id, Model model) {
+        MeterReading reading = meterReadingService.findById(id)
+                .orElseThrow(() -> new RuntimeException("Očitanje nije pronađeno"));
+        model.addAttribute("pageTitle", "Pregled očitanja #" + id);
+        model.addAttribute("reading", reading);
+        return "readings/view";
+    }
+
+    /**
      * API endpoint za dohvaćanje prethodnog očitanja korisnika
      */
     @GetMapping("/api/user/{userId}/latest-reading")
