@@ -34,6 +34,9 @@ public class BillService {
     @Autowired
     private SettingsService settingsService;
 
+    @Autowired
+    private PaymentService paymentService;
+
     public List<BillPreviewDTO> previewAllBills(Optional<Long> optionalUserId) {
         List<User> users;
         if (optionalUserId.isPresent()) {
@@ -115,6 +118,7 @@ public class BillService {
             bill.setStatus(BillStatus.PENDING);
             bill.setCreatedBy(createdBy);
             bill.setAccountNumber(settings.getAccountNumber());
+            bill.setPaidAmount(java.math.BigDecimal.ZERO);
             billRepository.save(bill);
 
             // Mark all readings up to endReadingId as billed for this user
@@ -128,6 +132,10 @@ public class BillService {
                     break;
                 }
             }
+
+            // Apply any existing prepayments to this bill
+            paymentService.applyPrepaymentsToBill(bill, createdBy);
+
             saved.add(bill);
         }
         return saved;

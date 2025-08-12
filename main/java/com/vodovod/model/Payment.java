@@ -16,8 +16,12 @@ public class Payment {
     private Long id;
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "bill_id", nullable = false)
-    @NotNull(message = "Račun je obavezan")
+    @JoinColumn(name = "user_id", nullable = false)
+    @NotNull(message = "Korisnik je obavezan")
+    private User user;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "bill_id")
     private Bill bill;
     
     @NotNull(message = "Datum uplate je obavezan")
@@ -53,6 +57,7 @@ public class Payment {
     
     public Payment(Bill bill, LocalDate paymentDate, BigDecimal amount) {
         this.bill = bill;
+        this.user = bill != null ? bill.getUser() : null;
         this.paymentDate = paymentDate;
         this.amount = amount;
     }
@@ -64,6 +69,14 @@ public class Payment {
     
     public void setId(Long id) {
         this.id = id;
+    }
+    
+    public User getUser() {
+        return user;
+    }
+    
+    public void setUser(User user) {
+        this.user = user;
     }
     
     public Bill getBill() {
@@ -128,5 +141,10 @@ public class Payment {
     
     public void setCreatedBy(String createdBy) {
         this.createdBy = createdBy;
+    }
+    
+    // Utility
+    public boolean isPrepayment() {
+        return this.bill == null;
     }
 }

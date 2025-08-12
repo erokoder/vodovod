@@ -2,6 +2,7 @@ package com.vodovod.repository;
 
 import com.vodovod.model.Bill;
 import com.vodovod.model.Payment;
+import com.vodovod.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -29,4 +30,9 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     
     @Query("SELECT SUM(p.amount) FROM Payment p")
     BigDecimal sumTotalAmount();
+    
+    List<Payment> findByUserAndBillIsNullOrderByPaymentDateAsc(User user);
+    
+    @Query("SELECT COALESCE(SUM(p.amount),0) FROM Payment p WHERE p.user = :user AND p.bill IS NULL")
+    BigDecimal sumPrepaymentByUser(User user);
 }
