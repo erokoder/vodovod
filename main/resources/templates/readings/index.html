@@ -53,7 +53,7 @@
                         <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                             <thead>
                                 <tr>
-                                    <th>ID</th>
+                                    <!-- Removed ID column -->
                                     <th>Korisnik</th>
                                     <th>Datum očitanja</th>
                                     <th>Prethodno stanje</th>
@@ -64,10 +64,10 @@
                             </thead>
                             <tbody>
                                 <tr th:if="${#lists.isEmpty(readings)}">
-                                    <td colspan="7" class="text-center">Nema podataka za prikaz</td>
+                                    <td colspan="6" class="text-center">Nema podataka za prikaz</td>
                                 </tr>
                                 <tr th:each="reading : ${readings}">
-                                    <td th:text="${reading.id}"></td>
+                                    <!-- Removed ID cell -->
                                     <td th:text="${reading.user.fullName + ' (' + reading.user.meterNumber + ')'}"
                                         th:data-order="${reading.user.lastName + ' ' + reading.user.firstName}"></td>
                                     <td th:text="${#temporals.format(reading.readingDate, 'dd.MM.yyyy')}"
@@ -97,8 +97,8 @@ $(document).ready(function() {
         "language": {
             "url": "//cdn.datatables.net/plug-ins/1.10.19/i18n/Croatian.json"
         },
-        // Default order: by user (col 1) asc, then by date (col 2) desc
-        "order": [[ 1, "asc" ], [ 2, "desc" ]],
+        // Default order: by user (now col 0) asc, then by date (now col 1) desc
+        "order": [[ 0, "asc" ], [ 1, "desc" ]],
         "pageLength": 25,
         "responsive": true
     });
