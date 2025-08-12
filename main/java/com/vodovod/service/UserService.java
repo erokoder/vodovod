@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import com.vodovod.model.MeterReading;
 
 @Service
 @Transactional
@@ -20,6 +21,9 @@ public class UserService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private MeterReadingService meterReadingService;
 
     public List<User> getAllUsers() {
         return userRepository.findAll();
@@ -79,7 +83,26 @@ public class UserService {
             }
         }
 
-        return saveUser(user);
+        User savedUser = saveUser(user);
+
+        // Ako je korisnik tipa USER i ima broj vodomjera, kreiraj početno očitanje (0) na datum kreiranja korisnika
+        if (savedUser.getRole() == Role.USER
+                && savedUser.getMeterNumber() != null
+                && !savedUser.getMeterNumber().trim().isEmpty()) {
+            java.time.LocalDate readingDate = savedUser.getCreatedAt() != null
+                    ? savedUser.getCreatedAt().toLocalDate()
+                    : java.time.LocalDate.now();
+            com.vodovod.model.MeterReading initialReading = new com.vodovod.model.MeterReading(
+                    savedUser,
+                    readingDate,
+                    java.math.BigDecimal.ZERO
+            );
+            initialReading.setNotes("Početno očitanje");
+            initialReading.setCreatedBy("sistem");
+            meterReadingService.saveReading(initialReading);
+        }
+
+        return savedUser;
     }
 
     public User updateUser(User user) {
