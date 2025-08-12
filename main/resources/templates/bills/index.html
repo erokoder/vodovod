@@ -81,46 +81,46 @@
             </div>
         </div>
     </div>
-</div>
 
-<!-- Preview Modal -->
-<div class="modal fade" id="previewModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-xl modal-dialog-scrollable">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title"><i class="bi bi-eye"></i> Pregled generiranih računa</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div class="table-responsive">
-          <table class="table table-sm table-striped">
-            <thead>
-              <tr>
-                <th>Korisnik</th>
-                <th>Period</th>
-                <th>Preth. očitanje</th>
-                <th>Tren. očitanje</th>
-                <th>Potrošnja (m³)</th>
-                <th>Cijena/m³</th>
-                <th>Voda</th>
-                <th>Fiksno</th>
-                <th>Ukupno</th>
-              </tr>
-            </thead>
-            <tbody id="previewBody">
-            </tbody>
-          </table>
+    <!-- Preview Modal -->
+    <div class="modal fade" id="previewModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title"><i class="bi bi-eye"></i> Pregled generiranih računa</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="table-responsive">
+              <table class="table table-sm table-striped">
+                <thead>
+                  <tr>
+                    <th>Korisnik</th>
+                    <th>Period</th>
+                    <th>Preth. očitanje</th>
+                    <th>Tren. očitanje</th>
+                    <th>Potrošnja (m³)</th>
+                    <th>Cijena/m³</th>
+                    <th>Voda</th>
+                    <th>Fiksno</th>
+                    <th>Ukupno</th>
+                  </tr>
+                </thead>
+                <tbody id="previewBody">
+                </tbody>
+              </table>
+            </div>
+            <div id="noData" class="alert alert-info d-none">Nema novih računa za generirati.</div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zatvori</button>
+            <button id="btn-confirm-generate" type="button" class="btn btn-success">
+                <i class="bi bi-check2-circle"></i> Potvrdi generiranje
+            </button>
+          </div>
         </div>
-        <div id="noData" class="alert alert-info d-none">Nema novih računa za generirati.</div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zatvori</button>
-        <button id="btn-confirm-generate" type="button" class="btn btn-success">
-            <i class="bi bi-check2-circle"></i> Potvrdi generiranje
-        </button>
       </div>
     </div>
-  </div>
 </div>
 
 <div layout:fragment="scripts">
