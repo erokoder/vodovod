@@ -5,181 +5,178 @@ import com.itextpdf.text.pdf.*;
 import com.vodovod.model.Bill;
 import com.vodovod.model.SystemSettings;
 import com.vodovod.model.User;
+import com.vodovod.repository.BillRepository;
+import com.vodovod.repository.PaymentRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.math.BigDecimal;
+import java.text.NumberFormat;
 import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
+@Service
 public class BillPdfService {
+
+    @Autowired
+    private BillRepository billRepository;
+
+    @Autowired
+    private PaymentRepository paymentRepository;
 
     public byte[] createBillPdf(Bill bill, SystemSettings settings) {
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            Document document = new Document(PageSize.A4, 36, 36, 36, 36);
-            PdfWriter writer = PdfWriter.getInstance(document, baos);
-            document.open();
+
+            InputStream templateStream = BillPdfService.class.getResourceAsStream("/tamplate_invoice.pdf");
+            if (templateStream == null) {
+                throw new RuntimeException("PDF template '/tamplate_invoice.pdf' nije pronađen u resources.");
+            }
+
+            PdfReader pdfReader = new PdfReader(templateStream);
+            PdfStamper pdfStamper = new PdfStamper(pdfReader, baos);
+            PdfContentByte canvas = pdfStamper.getOverContent(1);
 
             // Fonts
-            Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16);
-            Font sectionTitleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12);
-            Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
-            Font smallFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
+            BaseFont base = BaseFont.createFont(BaseFont.TIMES_ROMAN, BaseFont.CP1250, BaseFont.EMBEDDED);
+            Font font = new Font(base, 10, Font.NORMAL, BaseColor.BLACK);
+            Font font2 = new Font(base, 13, Font.NORMAL, BaseColor.BLACK);
+            Font font3 = new Font(base, 11, Font.NORMAL, BaseColor.BLACK);
 
-            // Header
-            Paragraph company = new Paragraph(safe(settings.getCompanyName(), "Vodovod"), sectionTitleFont);
-            document.add(company);
-            if (settings.getCompanyAddress() != null) {
-                document.add(new Paragraph(settings.getCompanyAddress(), smallFont));
-            }
-            if (settings.getCompanyPhone() != null || settings.getCompanyEmail() != null) {
-                String contact = (settings.getCompanyPhone() != null ? settings.getCompanyPhone() : "");
-                if (settings.getCompanyEmail() != null) {
-                    contact = (contact.isEmpty() ? "" : contact + " | ") + settings.getCompanyEmail();
-                }
-                if (!contact.isEmpty()) document.add(new Paragraph(contact, smallFont));
-            }
-            document.add(Chunk.NEWLINE);
-
-            Paragraph title = new Paragraph("Račun za vodu", titleFont);
-            document.add(title);
-
-            // Bill meta and customer section
+            // Formatters
             DateTimeFormatter df = DateTimeFormatter.ofPattern("dd.MM.yyyy");
-            User u = bill.getUser();
-            PdfPTable meta = new PdfPTable(new float[]{1f, 1f});
-            meta.setWidthPercentage(100);
-            PdfPCell left = new PdfPCell();
-            left.setBorder(Rectangle.NO_BORDER);
-            left.addElement(new Paragraph(safe(u.getFullName(), ""), normalFont));
-            if (u.getAddress() != null) left.addElement(new Paragraph(u.getAddress(), normalFont));
-            if (u.getPhoneNumber() != null) left.addElement(new Paragraph(u.getPhoneNumber(), normalFont));
+            NumberFormat currency = NumberFormat.getCurrencyInstance(new Locale("bs", "BA"));
 
-            PdfPCell right = new PdfPCell();
-            right.setBorder(Rectangle.NO_BORDER);
-            right.addElement(new Paragraph("Broj računa: " + safe(bill.getBillNumber(), "-"), normalFont));
-            right.addElement(new Paragraph("Datum izdavanja: " + (bill.getIssueDate() != null ? bill.getIssueDate().format(df) : ""), normalFont));
-            right.addElement(new Paragraph("Rok plaćanja: " + (bill.getDueDate() != null ? bill.getDueDate().format(df) : ""), normalFont));
-            right.addElement(new Paragraph("Broj vodomjera: " + safe(u.getMeterNumber(), ""), normalFont));
+            // Extract values
+            User user = bill.getUser();
+            String client = safe(user.getFullName());
+            String addressLine1 = "";
+            String addressLine2 = "";
+            if (user.getAddress() != null && !user.getAddress().isBlank()) {
+                String[] parts = user.getAddress().split(",|\n");
+                addressLine1 = parts.length > 0 ? parts[0].trim() : "";
+                addressLine2 = parts.length > 1 ? parts[1].trim() : "";
+            }
+            if (addressLine1.isBlank()) addressLine1 = "Humac b.b.";
+            if (addressLine2.isBlank()) addressLine2 = "88320 Ljubuški";
 
-            meta.addCell(left);
-            meta.addCell(right);
-            document.add(meta);
-            document.add(Chunk.NEWLINE);
+            String dateOd = bill.getPeriodFrom() != null ? bill.getPeriodFrom().format(df) : "";
+            String dateDo = bill.getPeriodTo() != null ? bill.getPeriodTo().format(df) : "";
+            String serialNumber = safe(user.getMeterNumber());
 
-            // Period and readings
-            Paragraph period = new Paragraph(
-                String.format("Period: %s - %s    |    Očitanje: %s -> %s",
-                    bill.getPeriodFrom() != null ? bill.getPeriodFrom().format(df) : "",
-                    bill.getPeriodTo() != null ? bill.getPeriodTo().format(df) : "",
-                    toStr(bill.getPreviousReading()),
-                    toStr(bill.getCurrentReading())
-                ), normalFont);
-            document.add(period);
-            document.add(Chunk.NEWLINE);
+            String oldValue = toStr(bill.getPreviousReading());
+            String newValue = toStr(bill.getCurrentReading());
+            String potrosnja = toStr(bill.getConsumption());
 
-            // Items table
-            PdfPTable table = new PdfPTable(new float[]{3f, 1f, 1f, 1f, 1f});
-            table.setWidthPercentage(100);
-            addHeaderCell(table, "Opis");
-            addHeaderCell(table, "Jedinica");
-            addHeaderCell(table, "Količina");
-            addHeaderCell(table, "Cijena");
-            addHeaderCell(table, "Ukupno");
+            BigDecimal waterAmount = nz(bill.getWaterAmount());
+            BigDecimal fixedFee = nz(bill.getFixedFee());
+            BigDecimal total = waterAmount.add(fixedFee);
+            BigDecimal waterPrice = nz(bill.getWaterPricePerM3());
 
-            addBodyCell(table, "Potrošnja Vode");
-            addBodyCell(table, "m3");
-            addBodyCell(table, toStr(bill.getConsumption()));
-            addBodyCell(table, money(bill.getWaterPricePerM3()));
-            addBodyCell(table, money(bill.getWaterAmount()));
+            // Compute user's net credit/debt (dug): positive -> preplata, negative -> dug
+            BigDecimal totalAll = billRepository.sumTotalAmountByUser(user);
+            if (totalAll == null) totalAll = BigDecimal.ZERO;
+            BigDecimal paidAll = billRepository.sumPaidAmountByUser(user);
+            if (paidAll == null) paidAll = BigDecimal.ZERO;
+            BigDecimal outstandingDebt = totalAll.subtract(paidAll); // >0 means debt
+            BigDecimal prepayment = paymentRepository.sumPrepaymentByUser(user);
+            if (prepayment == null) prepayment = BigDecimal.ZERO;
+            BigDecimal dugDecimal = prepayment.subtract(outstandingDebt); // positive credit, negative debt
 
-            if (bill.getFixedFee() != null && bill.getFixedFee().compareTo(BigDecimal.ZERO) > 0) {
-                addBodyCell(table, "Paušalno (jednom godišnje)");
-                addBodyCell(table, "");
-                addBodyCell(table, "");
-                addBodyCell(table, "");
-                addBodyCell(table, money(bill.getFixedFee()));
+            double iznos = waterAmount.doubleValue();
+            double pausal = fixedFee.doubleValue();
+            double cijena_vode = waterPrice.doubleValue();
+            double dug = dugDecimal.doubleValue();
+
+            // Header and meta mapped to template positions (legacy layout)
+            ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase(client, font2), 60, 670, 0);
+            ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase(addressLine1, font2), 60, 655, 0);
+            ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase(addressLine2, font2), 60, 640, 0);
+
+            if (!dateOd.isBlank() && !oldValue.isBlank()) {
+                ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase(dateOd + " -> " + oldValue, font), 60, 550, 0);
+            }
+            if (!dateDo.isBlank() && !newValue.isBlank()) {
+                ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase(dateDo + " -> " + newValue, font), 60, 520, 0);
             }
 
-            // Total row
-            PdfPCell totalLabel = new PdfPCell(new Phrase("Ukupno", new Font(Font.FontFamily.HELVETICA, 10, Font.BOLD)));
-            totalLabel.setColspan(4);
-            totalLabel.setHorizontalAlignment(Element.ALIGN_RIGHT);
-            table.addCell(totalLabel);
-            PdfPCell totalValue = new PdfPCell(new Phrase(money(bill.getTotalAmount()), new Font(Font.FontFamily.HELVETICA, 10, Font.BOLD)));
-            totalValue.setHorizontalAlignment(Element.ALIGN_RIGHT);
-            table.addCell(totalValue);
-            document.add(table);
+            if (bill.getIssueDate() != null) {
+                ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase("Datum kreiranja računa: " + bill.getIssueDate().format(df), font), 60, 600, 0);
+            }
+            ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase("Brojilo: " + serialNumber, font), 60, 585, 0);
 
-            document.add(Chunk.NEWLINE);
-            document.add(new Paragraph("Pregled stanja duga potrošača: " + (bill.isOverdue() ? "Dospjelo" : "Nema prethodnih dugovanja"), smallFont));
-            document.add(Chunk.NEWLINE);
+            // Table-like numbers on template
+            ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase(potrosnja, font), 385, 535, 0);
+            ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase(currency.format(iznos), font), 480, 535, 0);
+            ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase(currency.format(pausal), font), 480, 515, 0);
+            ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase(currency.format(iznos + pausal), font), 480, 452, 0);
+            ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase(currency.format(cijena_vode), font), 435, 535, 0);
 
-            // Payment slip (Uplatnica)
-            document.add(new Paragraph("Uplatnica", sectionTitleFont));
-            document.add(Chunk.NEWLINE);
+            // Debt/credit info block
+            if (Math.abs(dug) < 0.005) {
+                ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase("Nema prethodni dugovanja", font), 60, 402, 0);
+            } else if (dug < 0) {
+                ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase("Vaš dug na datum izdavanja ovog računa je: " + currency.format(dug) + " , molimo Vas da izmirite svoje obaveze.", font), 60, 402, 0);
+            } else {
+                double platit = (iznos + pausal) - dug;
+                if (platit <= 0) {
+                    ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase("U pretplati ste imali: " + currency.format(dug) + " nakon ovog računa ostane vam još: " + currency.format((iznos + pausal) - dug), font), 60, 402, 0);
+                } else {
+                    ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase("U pretplati ste imali: " + currency.format(dug) + " nakon ovog računa ostane vam još: " + currency.format(0), font), 60, 402, 0);
+                }
+            }
 
-            PdfPTable slip = new PdfPTable(new float[]{2f, 2f});
-            slip.setWidthPercentage(100);
+            // Additional notes
+            String dodatak = bill.getNotes() == null ? "" : bill.getNotes();
+            ColumnText ct = new ColumnText(canvas);
+            ct.setSimpleColumn(new Phrase(dodatak, font), 533f, 100f, 60f, 377f, 10, Element.ALIGN_JUSTIFIED);
+            ct.go();
 
-            // Left column: Payer and purpose
-            PdfPCell payer = new PdfPCell();
-            payer.addElement(new Paragraph("Uplatitelj", smallFont));
-            String payerName = safe(u.getFullName(), "");
-            String payerAddress = safe(u.getAddress(), "");
-            payer.addElement(new Paragraph(payerName + (payerAddress.isEmpty()?"":"; " + payerAddress), normalFont));
-            payer.addElement(Chunk.NEWLINE);
-            payer.addElement(new Paragraph("Svrha doznake", smallFont));
-            String svrha = "Voda - broj vodomjera: " + safe(u.getMeterNumber(), "");
-            payer.addElement(new Paragraph(svrha, normalFont));
-            payer.setPadding(8);
-            slip.addCell(payer);
+            // Payment slip (uplatnica) area mapping
+            String payerLine = client + (addressLine1.isBlank() ? "" : ", " + addressLine1) + (addressLine2.isBlank() ? "" : " " + addressLine2);
+            ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase(payerLine, font3), 31, 237, 0);
+            ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase(serialNumber, font3), 31, 183, 0);
 
-            // Right column: Recipient and account
-            PdfPCell recipient = new PdfPCell();
-            recipient.addElement(new Paragraph("Račun primatelja", smallFont));
-            recipient.addElement(new Paragraph(safe(settings.getAccountNumber(), ""), normalFont));
-            recipient.addElement(Chunk.NEWLINE);
-            recipient.addElement(new Paragraph("Primatelj", smallFont));
-            String primatelj = safe(settings.getCompanyName(), "") +
-                    (settings.getCompanyAddress() != null ? ", " + settings.getCompanyAddress() : "");
-            recipient.addElement(new Paragraph(primatelj, normalFont));
-            recipient.addElement(Chunk.NEWLINE);
-            recipient.addElement(new Paragraph("Iznos", smallFont));
-            recipient.addElement(new Paragraph(money(bill.getTotalAmount()) + " KM", normalFont));
-            recipient.setPadding(8);
-            slip.addCell(recipient);
+            String companyName = safe(settings.getCompanyName());
+            String companyAddress = settings.getCompanyAddress();
+            String companyLine1 = companyName + (companyAddress != null && !companyAddress.isBlank() ? ", " + companyAddress : "");
+            ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase(companyLine1, font3), 31, 127, 0);
+            // Optional second line for city/extra address if provided after comma
+            String[] compParts = companyLine1.split(",");
+            String companyLine2 = compParts.length > 2 ? compParts[2].trim() : (compParts.length > 1 ? compParts[1].trim() : "");
+            if (!companyLine2.isBlank()) {
+                ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase(companyLine2, font3), 31, 115, 0);
+            }
 
-            document.add(slip);
+            double platit = (iznos + pausal) - dug;
+            if (dug > 0) {
+                if (platit >= 0) {
+                    ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase(currency.format(-platit), font3), 320, 168, 0);
+                } else {
+                    ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase(currency.format(0), font3), 320, 168, 0);
+                }
+            } else {
+                ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase(currency.format(iznos + pausal), font3), 320, 168, 0);
+            }
 
-            document.close();
-            writer.close();
+            pdfStamper.close();
+            pdfReader.close();
+
             return baos.toByteArray();
         } catch (Exception e) {
             throw new RuntimeException("Greška pri generiranju PDF-a", e);
         }
     }
 
-    private static void addHeaderCell(PdfPTable table, String text) {
-        PdfPCell cell = new PdfPCell(new Phrase(text, new Font(Font.FontFamily.HELVETICA, 10, Font.BOLD)));
-        cell.setHorizontalAlignment(Element.ALIGN_CENTER);
-        cell.setBackgroundColor(new BaseColor(230, 240, 250));
-        table.addCell(cell);
-    }
-
-    private static void addBodyCell(PdfPTable table, String text) {
-        PdfPCell cell = new PdfPCell(new Phrase(text, new Font(Font.FontFamily.HELVETICA, 10)));
-        cell.setHorizontalAlignment(Element.ALIGN_LEFT);
-        table.addCell(cell);
-    }
-
-    private static String money(BigDecimal value) {
-        if (value == null) return "-";
-        return String.format("%,.2f", value).replace(',', 'X').replace('.', ',').replace('X', '.');
-    }
-
     private static String toStr(BigDecimal value) {
-        return value == null ? "-" : value.stripTrailingZeros().toPlainString();
+        if (value == null) return "";
+        BigDecimal stripped = value.stripTrailingZeros();
+        return stripped.scale() <= 0 ? stripped.toPlainString() : stripped.toPlainString();
     }
 
-    private static String safe(String v, String def) { return v == null || v.isBlank() ? def : v; }
+    private static BigDecimal nz(BigDecimal v) { return v == null ? BigDecimal.ZERO : v; }
+
+    private static String safe(String v) { return v == null ? "" : v; }
 }
