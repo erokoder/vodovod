@@ -35,7 +35,7 @@ public class DataInitializer implements CommandLineRunner {
             User admin = new User();
             admin.setUsername("admin");
             admin.setFirstName("Administrator");
-            admin.setLastName("Sistema");
+            admin.setLastName("Vodovoda");
             admin.setEmail("admin@vodovod.hr");
             admin.setPassword(passwordEncoder.encode("admin123"));
             admin.setRole(Role.ADMIN);
@@ -48,7 +48,7 @@ public class DataInitializer implements CommandLineRunner {
         // Kreiraj sistemske postavke ako ne postoje
         if (systemSettingsRepository.findTopByOrderByIdAsc().isEmpty()) {
             SystemSettings settings = new SystemSettings();
-            settings.setWaterPricePerM3(new BigDecimal("2.50"));
+            settings.setWaterPricePerM3(new BigDecimal("0.30"));
             settings.setFixedFee(new BigDecimal("15.00"));
             settings.setUseFixedFee(true);
             settings.setAccountNumber("HR1234567890123456789");
@@ -57,30 +57,9 @@ public class DataInitializer implements CommandLineRunner {
             settings.setCompanyPhone("01/234-5678");
             settings.setCompanyEmail("info@vodovod.hr");
             settings.setBillDueDays(30);
-            settings.setUpdatedBy("sistem");
-            // Default cijena električne energije
-            settings.setElectricityPricePerKWh(new BigDecimal("0.20"));
-            
+            settings.setUpdatedBy("admin");
             systemSettingsRepository.save(settings);
             System.out.println("✓ Kreirane početne sistemske postavke");
-        }
-
-        // Kreiraj test korisnika vodovoda ako ga nema
-        if (!userRepository.existsByUsername("user1")) {
-            User user = new User();
-            user.setUsername("user1");
-            user.setFirstName("Marko");
-            user.setLastName("Marković");
-            user.setEmail("marko@example.com");
-            user.setPassword("user123");
-            user.setRole(Role.USER);
-            user.setMeterNumber("VM001");
-            user.setAddress("Test ulica 1, Zagreb");
-            user.setPhoneNumber("098/123-456");
-            user.setEnabled(true);
-            
-            userService.createUser(user);
-            System.out.println("✓ Kreiran test korisnik (username: user1, password: user123, meter: VM001)");
         }
     }
 }
