@@ -35,10 +35,23 @@ public class ReadingsController {
     private MeterReadingService meterReadingService;
 
     @GetMapping
-    public String index(Model model) {
-        List<MeterReading> readings = meterReadingService.getAllReadings();
+    public String index(@RequestParam(value = "userId", required = false) Long userId, Model model) {
+        List<MeterReading> readings;
+        if (userId != null) {
+            Optional<User> userOpt = userService.getUserById(userId);
+            if (userOpt.isPresent()) {
+                readings = meterReadingService.getReadingsByUser(userOpt.get());
+                model.addAttribute("selectedUserId", userId);
+            } else {
+                readings = meterReadingService.getAllReadings();
+            }
+        } else {
+            readings = meterReadingService.getAllReadings();
+        }
         model.addAttribute("pageTitle", "Očitanja");
         model.addAttribute("readings", readings);
+        // Add users for filter dropdown (only active water users)
+        model.addAttribute("users", userService.getActiveWaterUsers());
         return "readings/index";
     }
     
@@ -198,7 +211,7 @@ public class ReadingsController {
                             BigDecimal newConsumption = newReading.subtract(last.getReadingValue());
                             if (newConsumption.signum() > 0) {
                                 BigDecimal diff = newConsumption.subtract(lastConsumption).abs();
-                                BigDecimal percent = diff.divide(lastConsumption, 6, RoundingMode.HALF_UP);
+                                BigDecimal percent = diff.divide(lastConsumption, 6, java.math.RoundingMode.HALF_UP);
                                 if (percent.compareTo(new BigDecimal("0.20")) > 0) {
                                     response.put("warn", true);
                                     response.put("warningMessage", "Nova potrošnja (" + newConsumption + " m³) odstupa više od 20% od prethodne (" + lastConsumption + " m³)");
