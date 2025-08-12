@@ -1,10 +1,9 @@
 package com.vodovod.model;
 
 public enum BillStatus {
-    PENDING("Na čekanju"),
+    PENDING("Nije Plaćen"),
     PAID("Plaćen"),
     PARTIALLY_PAID("Djelomično plaćen"),
-    OVERDUE("Dospješan"),
     CANCELLED("Storniran");
 
     private final String displayName;

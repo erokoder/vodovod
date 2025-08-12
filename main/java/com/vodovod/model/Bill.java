@@ -305,7 +305,7 @@ public class Bill {
     }
     
     public boolean isOverdue() {
-        return status == BillStatus.OVERDUE || (dueDate.isBefore(LocalDate.now()) && !isPaid());
+        return (dueDate.isBefore(LocalDate.now()) && !isPaid());
     }
     
     public void calculateTotal() {
@@ -323,8 +323,6 @@ public class Bill {
             status = BillStatus.PAID;
         } else if (paidAmount.compareTo(BigDecimal.ZERO) > 0) {
             status = BillStatus.PARTIALLY_PAID;
-        } else if (isOverdue()) {
-            status = BillStatus.OVERDUE;
         } else {
             status = BillStatus.PENDING;
         }
