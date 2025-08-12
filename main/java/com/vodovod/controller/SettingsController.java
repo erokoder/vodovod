@@ -35,8 +35,9 @@ public class SettingsController {
     public String updateSettings(@RequestParam(name = "waterPricePerM3") BigDecimal waterPricePerM3,
                                  @RequestParam(name = "fixedFee") BigDecimal fixedFee,
                                  @RequestParam(name = "useFixedFee", defaultValue = "false") boolean useFixedFee,
+                                 @RequestParam(name = "accountNumber") String accountNumber,
                                  RedirectAttributes redirectAttributes) {
-        settingsService.updateSettings(waterPricePerM3, fixedFee, useFixedFee);
+        settingsService.updateSettings(waterPricePerM3, fixedFee, useFixedFee, accountNumber);
         redirectAttributes.addFlashAttribute("successMessage", "Postavke su uspješno spremljene.");
         return "redirect:/settings";
     }

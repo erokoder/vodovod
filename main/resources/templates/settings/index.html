@@ -37,6 +37,13 @@
                     </div>
                 </div>
                 
+                <div class="col-md-6">
+                    <label for="accountNumber" class="form-label">Broj bankovnog računa za uplate (IBAN)</label>
+                    <input type="text" class="form-control" id="accountNumber" name="accountNumber"
+                           th:value="${settings.accountNumber}" placeholder="npr. HR1234567890123456789" required>
+                    <div class="form-text">Ovaj broj računa bit će prikazan na ispisu računa.</div>
+                </div>
+                
                 <div class="col-12">
                     <button type="submit" class="btn btn-primary">
                         <i class="bi bi-save"></i> Spremi postavke

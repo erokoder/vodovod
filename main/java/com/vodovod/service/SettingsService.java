@@ -17,11 +17,12 @@ public class SettingsService {
         return systemSettingsRepository.findTopByOrderByIdAsc().orElseGet(SystemSettings::new);
     }
 
-    public SystemSettings updateSettings(BigDecimal waterPricePerM3, BigDecimal fixedFee, boolean useFixedFee) {
+    public SystemSettings updateSettings(BigDecimal waterPricePerM3, BigDecimal fixedFee, boolean useFixedFee, String accountNumber) {
         SystemSettings settings = systemSettingsRepository.findTopByOrderByIdAsc().orElseGet(SystemSettings::new);
         settings.setWaterPricePerM3(waterPricePerM3);
         settings.setFixedFee(fixedFee);
         settings.setUseFixedFee(useFixedFee);
+        settings.setAccountNumber(accountNumber);
         return systemSettingsRepository.save(settings);
     }
 }
