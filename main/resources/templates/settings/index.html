@@ -20,6 +20,11 @@
                 </div>
                 
                 <div class="col-md-4">
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="useFixedFee" name="useFixedFee" th:checked="${settings.useFixedFee}">
+                        <label class="form-check-label fw-semibold" for="useFixedFee">Uključi fiksnu naknadu</label>
+                        <div class="form-text">Ako je isključeno, paušal se ne obračunava.</div>
+                    </div>
                     <label for="fixedFee" class="form-label">Fiksna naknada (KM)</label>
                     <div class="input-group">
                         <input type="number" step="0.01" min="0" class="form-control" id="fixedFee" name="fixedFee"
@@ -27,14 +32,6 @@
                         <span class="input-group-text">KM</span>
                     </div>
                     <div id="fixedFeeHelp" class="form-text">Iznos po računu, neovisno o potrošnji</div>
-                </div>
-                
-                <div class="col-md-4 d-flex align-items-end">
-                    <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="useFixedFee" name="useFixedFee" th:checked="${settings.useFixedFee}">
-                        <label class="form-check-label fw-semibold" for="useFixedFee">Uključi fiksnu naknadu</label>
-                        <div class="form-text">Ako je isključeno, paušal se ne obračunava.</div>
-                    </div>
                 </div>
                 
                 <div class="col-md-6">
