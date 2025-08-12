@@ -41,7 +41,8 @@ public class DashboardService {
         stats.setPaidBills(billRepository.countByStatus(BillStatus.PAID));
         stats.setUnpaidBills(
             billRepository.countByStatus(BillStatus.PENDING) +
-            billRepository.countByStatus(BillStatus.PARTIALLY_PAID)
+            billRepository.countByStatus(BillStatus.PARTIALLY_PAID) +
+            billRepository.countByStatus(BillStatus.OVERDUE)
         );
         stats.setOverdueBills(billRepository.findOverdueBills(LocalDate.now()).size());
 
@@ -51,8 +52,10 @@ public class DashboardService {
 
         BigDecimal pendingRevenue = billRepository.sumTotalAmountByStatus(BillStatus.PENDING);
         BigDecimal partiallyPaidRevenue = billRepository.sumTotalAmountByStatus(BillStatus.PARTIALLY_PAID);
+        BigDecimal overdueRevenue = billRepository.sumTotalAmountByStatus(BillStatus.OVERDUE);
         BigDecimal totalPending = (pendingRevenue != null ? pendingRevenue : BigDecimal.ZERO)
-                .add(partiallyPaidRevenue != null ? partiallyPaidRevenue : BigDecimal.ZERO);
+                .add(partiallyPaidRevenue != null ? partiallyPaidRevenue : BigDecimal.ZERO)
+                .add(overdueRevenue != null ? overdueRevenue : BigDecimal.ZERO);
         stats.setPendingRevenue(totalPending);
 
         // Statistike očitanja
