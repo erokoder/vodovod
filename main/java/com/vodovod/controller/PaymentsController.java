@@ -3,6 +3,7 @@ package com.vodovod.controller;
 import com.vodovod.model.Bill;
 import com.vodovod.model.User;
 import com.vodovod.repository.BillRepository;
+import com.vodovod.repository.PaymentRepository;
 import com.vodovod.service.PaymentService;
 import com.vodovod.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,9 +32,13 @@ public class PaymentsController {
     @Autowired
     private PaymentService paymentService;
 
+    @Autowired
+    private PaymentRepository paymentRepository;
+
     @GetMapping
     public String index(Model model) {
         model.addAttribute("pageTitle", "Plaćanja");
+        model.addAttribute("payments", paymentRepository.findAllOrderByPaymentDateDesc());
         return "payments/index";
     }
     
