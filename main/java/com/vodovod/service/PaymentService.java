@@ -51,6 +51,29 @@ public class PaymentService {
 
                 remainingToAllocate = remainingToAllocate.subtract(allocateToBill);
             }
+        } else {
+            // Ako je odabrano plaćanje unaprijed (billId == null), automatski raspodijeli na najstarije otvorene račune
+            List<Bill> openBills = billRepository.findOpenBillsByUser(user);
+            for (Bill openBill : openBills) {
+                if (remainingToAllocate.signum() <= 0) {
+                    break;
+                }
+                BigDecimal remainingOnBill = openBill.getTotalAmount().subtract(openBill.getPaidAmount());
+                BigDecimal allocateToBill = remainingToAllocate.min(remainingOnBill);
+                if (allocateToBill.signum() > 0) {
+                    Payment applied = new Payment(openBill, paymentDate, allocateToBill);
+                    applied.setUser(user);
+                    applied.setPaymentMethod(paymentMethod);
+                    applied.setCreatedBy(createdBy);
+                    paymentRepository.save(applied);
+
+                    openBill.setPaidAmount(openBill.getPaidAmount().add(allocateToBill));
+                    openBill.updateStatus();
+                    billRepository.save(openBill);
+
+                    remainingToAllocate = remainingToAllocate.subtract(allocateToBill);
+                }
+            }
         }
 
         if (remainingToAllocate.signum() > 0) {
