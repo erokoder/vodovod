@@ -51,6 +51,18 @@ public class SystemSettings {
     @Column(name = "updated_by")
     private String updatedBy; // Ko je zadnji ažurirao postavke
     
+    @Column(name = "electricity_price_per_kwh", precision = 10, scale = 4)
+    @DecimalMin(value = "0.0001", message = "Cijena električne energije mora biti pozitivna")
+    private BigDecimal electricityPricePerKWh = new BigDecimal("0.20");
+
+    public BigDecimal getElectricityPricePerKWh() {
+        return electricityPricePerKWh;
+    }
+
+    public void setElectricityPricePerKWh(BigDecimal electricityPricePerKWh) {
+        this.electricityPricePerKWh = electricityPricePerKWh;
+    }
+    
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
