@@ -33,7 +33,6 @@ public class User {
     @Column(unique = true)
     private String email;
     
-    @NotBlank(message = "Lozinka je obavezna")
     private String password;
     
     @Enumerated(EnumType.STRING)
