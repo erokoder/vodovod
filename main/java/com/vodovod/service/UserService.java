@@ -139,6 +139,16 @@ public class UserService {
         // Zadrži datum kreiranja
         user.setCreatedAt(existingUser.getCreatedAt());
 
+        // Spriječi uklanjanje administratorske uloge ili onemogućavanje jedinog administratora
+        if (existingUser.getRole() == Role.ADMIN) {
+            long enabledAdmins = userRepository.countByRoleAndEnabled(Role.ADMIN);
+            boolean roleChangedFromAdminToNonAdmin = user.getRole() != null && user.getRole() != Role.ADMIN;
+            boolean willBeDisabled = !user.isEnabled();
+            if ((roleChangedFromAdminToNonAdmin || willBeDisabled) && enabledAdmins <= 1) {
+                throw new RuntimeException("Nije moguće ukloniti administratorsku ulogu ili onemogućiti jedinog administratora u sistemu.");
+            }
+        }
+
         return saveUser(user);
     }
 
@@ -147,6 +157,14 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("Korisnik nije pronađen"));
         
         // Onemogući korisnika umjesto brisanja (soft delete)
+        // Spriječi onemogućavanje jedinog administratora
+        if (user.getRole() == Role.ADMIN && user.isEnabled()) {
+            long enabledAdmins = userRepository.countByRoleAndEnabled(Role.ADMIN);
+            if (enabledAdmins <= 1) {
+                throw new RuntimeException("Nije moguće onemogućiti jedinog administratora u sistemu.");
+            }
+        }
+
         user.setEnabled(false);
         userRepository.save(user);
     }
