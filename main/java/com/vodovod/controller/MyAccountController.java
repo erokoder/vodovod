@@ -47,6 +47,7 @@ public class MyAccountController {
         User user = userOpt.get();
         model.addAttribute("pageTitle", "Moj Račun");
         model.addAttribute("user", user);
+        model.addAttribute("activeMenu", "my-account");
         
         return "account/profile";
     }
