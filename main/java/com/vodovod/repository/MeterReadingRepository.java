@@ -37,4 +37,13 @@ public interface MeterReadingRepository extends JpaRepository<MeterReading, Long
 
     @Query("SELECT mr FROM MeterReading mr JOIN mr.user u ORDER BY u.lastName ASC, u.firstName ASC, mr.readingDate DESC")
     List<MeterReading> findAllOrderByUserNameAndDateDesc();
+
+    // Date range filtering per user
+    List<MeterReading> findByUserAndReadingDateBetweenOrderByReadingDateDesc(User user, LocalDate startDate, LocalDate endDate);
+    List<MeterReading> findByUserAndReadingDateGreaterThanEqualOrderByReadingDateDesc(User user, LocalDate startDate);
+    List<MeterReading> findByUserAndReadingDateLessThanEqualOrderByReadingDateDesc(User user, LocalDate endDate);
+
+    // Date range filtering across all users
+    List<MeterReading> findByReadingDateGreaterThanEqualOrderByReadingDateDesc(LocalDate startDate);
+    List<MeterReading> findByReadingDateLessThanEqualOrderByReadingDateDesc(LocalDate endDate);
 }
