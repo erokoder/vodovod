@@ -34,7 +34,7 @@
             </span>
         </h1>
         <div>
-            <a th:href="@{'/users/' + ${user.id} + '/edit'}" class="btn btn-primary">
+            <a th:href="@{/users/{id}/edit(id=${user.id})}" class="btn btn-primary">
                 <i class="bi bi-pencil"></i>
                 Uredi
             </a>
@@ -228,12 +228,12 @@
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2">
-                        <a th:href="@{'/users/' + ${user.id} + '/edit'}" class="btn btn-primary">
+                        <a th:href="@{/users/{id}/edit(id=${user.id})}" class="btn btn-primary">
                             <i class="bi bi-pencil"></i>
                             Uredi korisnika
                         </a>
                         
-                        <form th:if="${user.enabled}" th:action="@{'/users/' + ${user.id} + '/delete'}" method="post"
+                        <form th:if="${user.enabled}" th:action="@{/users/{id}/delete(id=${user.id})}" method="post"
                               onsubmit="return confirm('Jeste li sigurni da želite onemogućiti ovog korisnika?')">
                             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                             <button type="submit" class="btn btn-warning w-100">
@@ -242,7 +242,7 @@
                             </button>
                         </form>
                         
-                        <form th:unless="${user.enabled}" th:action="@{'/users/' + ${user.id} + '/enable'}" method="post">
+                        <form th:unless="${user.enabled}" th:action="@{/users/{id}/enable(id=${user.id})}" method="post">
                             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                             <button type="submit" class="btn btn-success w-100">
                                 <i class="bi bi-check-circle"></i>
