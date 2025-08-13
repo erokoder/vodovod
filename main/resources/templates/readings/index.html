@@ -31,8 +31,8 @@
                 <option th:selected="${selectedUserId == null}" value="">Svi korisnici</option>
                 <option th:each="u : ${users}"
                         th:value="${u.id}"
-                        th:text="${u.fullName} + ' (' + ${u.meterNumber} + ')'"
-                        th:selected="${selectedUserId} == ${u.id}">
+                        th:text="${u.fullName + ' (' + u.meterNumber + ')'}"
+                        th:selected="${selectedUserId == u.id}">
                 </option>
             </select>
         </div>
@@ -84,7 +84,7 @@
                                     <td class="text-right" th:text="${#numbers.formatDecimal(reading.readingValue, 1, 3) + ' m³'}"></td>
                                     <td class="text-right" th:text="${#numbers.formatDecimal(reading.consumption, 1, 3) + ' m³'}"></td>
                                     <td class="text-center">
-                                        <a th:href="@{'/readings/' + ${reading.id}}" class="btn btn-info btn-sm" title="Pregled detalja">
+                                        <a th:href="@{/readings/{id}(id=${reading.id})}" class="btn btn-info btn-sm" title="Pregled detalja">
                                             <i class="bi bi-eye"></i> Pregled
                                         </a>
                                     </td>

@@ -13,7 +13,7 @@
             <a href="/readings" class="btn btn-secondary btn-sm">
                 <i class="bi bi-arrow-left"></i> Nazad na listu
             </a>
-            <a th:href="@{'/users/' + ${reading.user.id}}" class="btn btn-outline-primary btn-sm">
+            <a th:href="@{/users/{id}(id=${reading.user.id})}" class="btn btn-outline-primary btn-sm">
                 <i class="bi bi-person"></i> Korisnik
             </a>
         </div>
@@ -33,7 +33,7 @@
                     <div class="row mb-3">
                         <div class="col-sm-4 text-muted">Korisnik</div>
                         <div class="col-sm-8">
-                            <a th:href="@{'/users/' + ${reading.user.id}}" th:text="${reading.user.fullName}">Ime Prezime</a>
+                            <a th:href="@{/users/{id}(id=${reading.user.id})}" th:text="${reading.user.fullName}">Ime Prezime</a>
                             <small class="text-muted" th:if="${reading.user.meterNumber}">(<span th:text="${reading.user.meterNumber}"></span>)</small>
                         </div>
                     </div>

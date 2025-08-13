@@ -23,8 +23,8 @@
                 <option th:selected="${selectedUserId == null}" value="">Svi korisnici</option>
                 <option th:each="u : ${users}"
                         th:value="${u.id}"
-                        th:text="${u.fullName} + ' (' + ${u.meterNumber} + ')'"
-                        th:selected="${selectedUserId} == ${u.id}">
+                        th:text="${u.fullName + ' (' + u.meterNumber + ')'}"
+                        th:selected="${selectedUserId == u.id}">
                 </option>
             </select>
         </div>
@@ -84,7 +84,7 @@
                                     </td>
                                     <td>
                                         <div class="btn-group btn-group-sm" role="group">
-                                            <a th:if="${p.bill != null}" th:href="@{'/bills/' + ${p.bill.id} + '/pdf'}" class="btn btn-outline-secondary" title="Račun PDF">
+                                            <a th:if="${p.bill != null}" th:href="@{/bills/{id}/pdf(id=${p.bill.id})}" class="btn btn-outline-secondary" title="Račun PDF">
                                                 <i class="bi bi-filetype-pdf"></i>
                                             </a>
                                         </div>

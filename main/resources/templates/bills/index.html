@@ -28,8 +28,8 @@
                 <option th:selected="${selectedUserId == null}" value="">Svi korisnici</option>
                 <option th:each="u : ${users}"
                         th:value="${u.id}"
-                        th:text="${u.fullName} + ' (' + ${u.meterNumber} + ')'"
-                        th:selected="${selectedUserId} == ${u.id}">
+                        th:text="${u.fullName + ' (' + u.meterNumber + ')'}"
+                        th:selected="${selectedUserId == u.id}">
                 </option>
             </select>
         </div>
@@ -72,10 +72,10 @@
                             </thead>
                             <tbody>
                                 <tr th:if="${#lists.isEmpty(bills)}">
-                                    <td colspan="7" class="text-center">Nema podataka za prikaz</td>
+                                    <td colspan="8" class="text-center">Nema podataka za prikaz</td>
                                 </tr>
                                 <tr th:each="b : ${bills}">
-                                    <td th:text="${b.billNumber} ?: '-'">-</td>
+                                    <td th:text="${b.billNumber != null ? b.billNumber : '-'}">-</td>
                                     <td th:text="${b.user.fullName}"></td>
                                     <td>
                                         <span th:text="${b.periodFrom}"></span> - <span th:text="${b.periodTo}"></span>
@@ -88,7 +88,7 @@
                                               th:classappend="${b.status == T(com.vodovod.model.BillStatus).PAID} ? 'badge bg-success' : (${b.status == T(com.vodovod.model.BillStatus).PARTIALLY_PAID} ? 'badge bg-warning text-dark' : (${b.status == T(com.vodovod.model.BillStatus).PENDING} ? 'badge bg-danger' : 'badge bg-secondary'))"></span>
                                     </td>
                                     <td class="text-center">
-                                        <a th:href="@{'/bills/' + ${b.id} + '/pdf'}" class="btn btn-outline-secondary btn-sm" title="Preuzmi PDF">
+                                        <a th:href="@{/bills/{id}/pdf(id=${b.id})}" class="btn btn-outline-secondary btn-sm" title="Preuzmi PDF">
                                             <i class="bi bi-filetype-pdf"></i>
                                         </a>
                                     </td>
