@@ -31,12 +31,12 @@
         <div class="col-md-3">
             <label for="startDate" class="form-label">Datum od</label>
             <input type="date" class="form-control" id="startDate" name="startDate"
-                   th:value="${startDate != null} ? #temporals.format(startDate, 'yyyy-MM-dd') : ''">
+                   th:value="${startDate != null ? #temporals.format(startDate, 'yyyy-MM-dd') : ''}">
         </div>
         <div class="col-md-3">
             <label for="endDate" class="form-label">Datum do</label>
             <input type="date" class="form-control" id="endDate" name="endDate"
-                   th:value="${endDate != null} ? #temporals.format(endDate, 'yyyy-MM-dd') : ''">
+                   th:value="${endDate != null ? #temporals.format(endDate, 'yyyy-MM-dd') : ''}">
         </div>
         <div class="col-md-2 align-self-end">
             <button type="submit" class="btn btn-outline-primary"><i class="bi bi-funnel"></i> Filtriraj</button>
@@ -54,42 +54,42 @@
                     <div class="table-responsive">
                         <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                             <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Broj računa</th>
-                                    <th>Korisnik</th>
-                                    <th>Datum plaćanja</th>
-                                    <th>Iznos</th>
-                                    <th>Način plaćanja</th>
-                                    <th>Status</th>
-                                    <th>Akcije</th>
-                                </tr>
+                            <tr>
+                                <th>ID</th>
+                                <th>Broj računa</th>
+                                <th>Korisnik</th>
+                                <th>Datum plaćanja</th>
+                                <th>Iznos</th>
+                                <th>Način plaćanja</th>
+                                <th>Status</th>
+                                <th>Akcije</th>
+                            </tr>
                             </thead>
                             <tbody>
-                                <tr th:if="${#lists.isEmpty(payments)}">
-                                    <td colspan="8" class="text-center">Nema podataka za prikaz</td>
-                                </tr>
-                                <tr th:each="p : ${payments}">
-                                    <td th:text="${p.id}">-</td>
-                                    <td>
-                                        <span th:text="${p.bill != null ? p.bill.billNumber : '-'}"></span>
-                                    </td>
-                                    <td th:text="${p.user != null ? p.user.fullName : '-'}">-</td>
-                                    <td th:text="${p.paymentDate}">-</td>
-                                    <td th:text="${#numbers.formatDecimal(p.amount, 1, 'COMMA', 2, 'POINT')}">-</td>
-                                    <td th:text="${p.paymentMethod != null ? p.paymentMethod : '-'}">-</td>
-                                    <td>
-                                        <span th:if="${p.bill == null}" class="badge bg-info text-dark">Avans</span>
-                                        <span th:if="${p.bill != null}" class="badge bg-secondary">Za račun</span>
-                                    </td>
-                                    <td>
-                                        <div class="btn-group btn-group-sm" role="group">
-                                            <a th:if="${p.bill != null}" th:href="@{/bills/{id}/pdf(id=${p.bill.id})}" class="btn btn-outline-secondary" title="Račun PDF">
-                                                <i class="bi bi-filetype-pdf"></i>
-                                            </a>
-                                        </div>
-                                    </td>
-                                </tr>
+                            <tr th:if="${#lists.isEmpty(payments)}">
+                                <td colspan="8" class="text-center">Nema podataka za prikaz</td>
+                            </tr>
+                            <tr th:each="p : ${payments}">
+                                <td th:text="${p.id}">-</td>
+                                <td>
+                                    <span th:text="${p.bill != null ? p.bill.billNumber : '-'}"></span>
+                                </td>
+                                <td th:text="${p.user != null ? p.user.fullName : '-'}">-</td>
+                                <td th:text="${p.paymentDate}">-</td>
+                                <td th:text="${#numbers.formatDecimal(p.amount, 1, 'COMMA', 2, 'POINT')}">-</td>
+                                <td th:text="${p.paymentMethod != null ? p.paymentMethod : '-'}">-</td>
+                                <td>
+                                    <span th:if="${p.bill == null}" class="badge bg-info text-dark">Avans</span>
+                                    <span th:if="${p.bill != null}" class="badge bg-secondary">Za račun</span>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a th:if="${p.bill != null}" th:href="@{/bills/{id}/pdf(id=${p.bill.id})}" class="btn btn-outline-secondary" title="Račun PDF">
+                                            <i class="bi bi-filetype-pdf"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
                             </tbody>
                         </table>
                     </div>
@@ -100,16 +100,16 @@
 </div>
 
 <div layout:fragment="scripts">
-<script th:inline="none">
-$(document).ready(function() {
-    $('#dataTable').DataTable({
-        language: { url: "//cdn.datatables.net/plug-ins/1.10.19/i18n/Croatian.json" },
-        order: [[ 3, "desc" ]],
-        pageLength: 25,
-        responsive: true
-    });
-});
-</script>
+    <script th:inline="none">
+        $(document).ready(function() {
+            $('#dataTable').DataTable({
+                language: { url: "//cdn.datatables.net/plug-ins/1.10.19/i18n/Croatian.json" },
+                order: [[ 3, "desc" ]],
+                pageLength: 25,
+                responsive: true
+            });
+        });
+    </script>
 </div>
 </body>
 </html>
