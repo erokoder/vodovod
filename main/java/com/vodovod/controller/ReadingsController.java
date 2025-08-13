@@ -35,23 +35,38 @@ public class ReadingsController {
     private MeterReadingService meterReadingService;
 
     @GetMapping
-    public String index(@RequestParam(value = "userId", required = false) Long userId, Model model) {
+    public String index(@RequestParam(value = "userId", required = false) Long userId,
+                        @RequestParam(value = "fromDate", required = false) String fromDateStr,
+                        @RequestParam(value = "toDate", required = false) String toDateStr,
+                        Model model) {
         List<MeterReading> readings;
+        LocalDate fromDate = null;
+        LocalDate toDate = null;
+        if (fromDateStr != null && !fromDateStr.isBlank()) {
+            fromDate = LocalDate.parse(fromDateStr);
+        }
+        if (toDateStr != null && !toDateStr.isBlank()) {
+            toDate = LocalDate.parse(toDateStr);
+        }
+
         if (userId != null) {
             Optional<User> userOpt = userService.getUserById(userId);
             if (userOpt.isPresent()) {
-                readings = meterReadingService.getReadingsByUser(userOpt.get());
+                readings = meterReadingService.getReadingsByUserAndDateRange(userOpt.get(), fromDate, toDate);
                 model.addAttribute("selectedUserId", userId);
             } else {
-                readings = meterReadingService.getAllReadings();
+                readings = meterReadingService.getAllReadingsByDateRange(fromDate, toDate);
             }
         } else {
-            readings = meterReadingService.getAllReadings();
+            readings = meterReadingService.getAllReadingsByDateRange(fromDate, toDate);
         }
         model.addAttribute("pageTitle", "Očitanja");
         model.addAttribute("readings", readings);
         // Add users for filter dropdown (only active water users)
         model.addAttribute("users", userService.getActiveWaterUsers());
+        // Preserve selected filters
+        model.addAttribute("fromDate", fromDate);
+        model.addAttribute("toDate", toDate);
         return "readings/index";
     }
     
@@ -140,7 +155,7 @@ public class ReadingsController {
      */
     @GetMapping("/api/user/{userId}/latest-reading")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> getLatestReading(@PathVariable Long userId) {
+    public ResponseEntity<java.util.Map<String, Object>> getLatestReading(@PathVariable Long userId) {
         try {
             User user = userService.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Korisnik nije pronađen"));

@@ -107,4 +107,31 @@ public class MeterReadingService {
     public Optional<MeterReading> findById(Long id) {
         return meterReadingRepository.findById(id);
     }
+
+    public List<MeterReading> getAllReadingsByDateRange(LocalDate fromDate, LocalDate toDate) {
+        if (fromDate != null && toDate != null) {
+            return meterReadingRepository.findByReadingDateBetween(fromDate, toDate);
+        } else if (fromDate != null) {
+            return meterReadingRepository.findByReadingDateGreaterThanEqualOrderByReadingDateDesc(fromDate);
+        } else if (toDate != null) {
+            return meterReadingRepository.findByReadingDateLessThanEqualOrderByReadingDateDesc(toDate);
+        } else {
+            return getAllReadings();
+        }
+    }
+
+    public List<MeterReading> getReadingsByUserAndDateRange(User user, LocalDate fromDate, LocalDate toDate) {
+        if (user == null) {
+            return getAllReadingsByDateRange(fromDate, toDate);
+        }
+        if (fromDate != null && toDate != null) {
+            return meterReadingRepository.findByUserAndReadingDateBetweenOrderByReadingDateDesc(user, fromDate, toDate);
+        } else if (fromDate != null) {
+            return meterReadingRepository.findByUserAndReadingDateGreaterThanEqualOrderByReadingDateDesc(user, fromDate);
+        } else if (toDate != null) {
+            return meterReadingRepository.findByUserAndReadingDateLessThanEqualOrderByReadingDateDesc(user, toDate);
+        } else {
+            return getReadingsByUser(user);
+        }
+    }
 }
