@@ -18,6 +18,7 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/payments")
@@ -37,17 +38,24 @@ public class PaymentsController {
 
     @GetMapping
     public String index(Model model,
+                        @RequestParam(value = "userId", required = false) Long userId,
                         @RequestParam(value = "startDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
                         @RequestParam(value = "endDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         model.addAttribute("pageTitle", "Plaćanja");
-        if (startDate != null || endDate != null) {
-            if (startDate == null) {
-                startDate = LocalDate.of(1970, 1, 1);
+        model.addAttribute("activeMenu", "payments");
+        // Populate users for filter dropdown
+        model.addAttribute("users", userService.getActiveWaterUsers());
+        model.addAttribute("selectedUserId", userId);
+        if (startDate != null || endDate != null || userId != null) {
+            // no defaulting; repository handles nulls flexibly
+            User selectedUser = null;
+            if (userId != null) {
+                Optional<User> userOpt = userService.getUserById(userId);
+                if (userOpt.isPresent()) {
+                    selectedUser = userOpt.get();
+                }
             }
-            if (endDate == null) {
-                endDate = LocalDate.now();
-            }
-            model.addAttribute("payments", paymentRepository.findByPaymentDateBetween(startDate, endDate));
+            model.addAttribute("payments", paymentRepository.search(selectedUser, startDate, endDate));
         } else {
             model.addAttribute("payments", paymentRepository.findAllOrderByPaymentDateDesc());
         }
