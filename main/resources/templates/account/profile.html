@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="hr" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main}">
+<head>
+    <title>Moj Račun</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="row g-4">
+        <div class="col-12 col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-muted small">Neplaćeni računi</div>
+                            <div class="h4 mb-0" th:text="${openBillsCount != null ? openBillsCount : 0}">0</div>
+                            <div class="small text-muted" th:text="'Ukupno: ' + (${openBillsTotal} != null ? #numbers.formatDecimal(openBillsTotal, 1, 'DEFAULT', 2, 'DEFAULT') : '0.00') + ' €'">
+                                Ukupno: 0.00 €
+                            </div>
+                        </div>
+                        <i class="bi bi-receipt fs-1 text-warning"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-12 col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-muted small">Uplate unaprijed</div>
+                            <div class="h4 mb-0" th:text="${prepaymentBalance} != null ? #numbers.formatDecimal(prepaymentBalance, 1, 'DEFAULT', 2, 'DEFAULT') + ' €' : '0.00 €'">
+                                0.00 €
+                            </div>
+                        </div>
+                        <i class="bi bi-piggy-bank fs-1 text-success"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-12 col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-muted small">Zadnje očitanje</div>
+                            <div class="h4 mb-0">
+                                <span th:if="${latestReadingValue != null}" th:text="${latestReadingValue} + ' m³'">—</span>
+                                <span th:unless="${latestReadingValue != null}">Nema podataka</span>
+                            </div>
+                            <div class="small text-muted" th:if="${latestReadingDate != null}" th:text="${latestReadingDate}">—</div>
+                        </div>
+                        <i class="bi bi-clipboard-data fs-1 text-primary"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12 col-lg-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>Moji podaci</span>
+                    <a class="btn btn-sm btn-outline-primary" href="/my-bills">
+                        <i class="bi bi-receipt"></i> Moji Računi
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-2">
+                        <div class="col-5 text-muted">Ime i prezime</div>
+                        <div class="col-7" th:text="${user != null ? user.fullName : ''}">—</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-5 text-muted">Korisničko ime</div>
+                        <div class="col-7" th:text="${user != null ? user.username : ''}">—</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-5 text-muted">Email</div>
+                        <div class="col-7" th:text="${user != null ? user.email : ''}">—</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-5 text-muted">Adresa</div>
+                        <div class="col-7" th:text="${user != null ? user.address : ''}">—</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-5 text-muted">Telefon</div>
+                        <div class="col-7" th:text="${user != null ? user.phoneNumber : ''}">—</div>
+                    </div>
+                    <div class="row mb-2" th:if="${user != null && user.meterNumber != null}">
+                        <div class="col-5 text-muted">Broj vodomjera</div>
+                        <div class="col-7" th:text="${user.meterNumber}">—</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-lg-4">
+            <div class="card">
+                <div class="card-header">Brze akcije</div>
+                <div class="card-body d-grid gap-2">
+                    <a class="btn btn-outline-primary" href="/my-bills"><i class="bi bi-receipt"></i> Pogledaj moje račune</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

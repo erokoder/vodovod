@@ -15,7 +15,7 @@ public class AuthController {
             if (authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
                 return "redirect:/dashboard";
             } else {
-                return "redirect:/my-bills";
+                return "redirect:/my-account";
             }
         }
         return "login";
@@ -27,7 +27,7 @@ public class AuthController {
             if (authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
                 return "redirect:/dashboard";
             } else {
-                return "redirect:/my-bills";
+                return "redirect:/my-account";
             }
         }
         return "redirect:/login";

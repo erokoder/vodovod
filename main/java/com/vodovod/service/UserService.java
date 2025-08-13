@@ -11,6 +11,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 import com.vodovod.model.MeterReading;
+import com.vodovod.model.Bill;
+import com.vodovod.repository.BillRepository;
+import com.vodovod.repository.PaymentRepository;
+import java.math.BigDecimal;
 
 @Service
 @Transactional
@@ -24,6 +28,12 @@ public class UserService {
 
     @Autowired
     private MeterReadingService meterReadingService;
+
+    @Autowired
+    private BillRepository billRepository;
+
+    @Autowired
+    private PaymentRepository paymentRepository;
 
     public List<User> getAllUsers() {
         return userRepository.findAll();
@@ -187,5 +197,22 @@ public class UserService {
     public String generateRandomPassword() {
         // Generiraj jednostavnu random lozinku
         return "user" + System.currentTimeMillis() % 10000;
+    }
+
+    // Additional helpers for user dashboard/profile
+    public java.util.List<Bill> getBillsForUser(User user) {
+        if (user == null) return java.util.List.of();
+        return billRepository.findByUserOrderByIssueDateDesc(user);
+    }
+
+    public BigDecimal getPrepaymentBalanceForUser(User user) {
+        if (user == null) return BigDecimal.ZERO;
+        BigDecimal sum = paymentRepository.sumPrepaymentByUser(user);
+        return sum != null ? sum : BigDecimal.ZERO;
+    }
+
+    public Optional<MeterReading> getLatestReadingForUser(User user) {
+        if (user == null) return Optional.empty();
+        return meterReadingService.getLatestReadingByUser(user);
     }
 }
