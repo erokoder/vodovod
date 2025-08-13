@@ -94,23 +94,24 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="role" class="form-label">Rola *</label>
-                                    <select class="form-select" id="role" th:field="*{role}" required>
+                                    <select class="form-select" id="role" th:field="*{role}" th:disabled="${user.id != null}" required>
                                         <option value="">Odaberite rolu...</option>
                                         <option th:each="roleOption : ${roles}" 
                                                 th:value="${roleOption}" 
                                                 th:text="${roleOption.displayName}"
                                                 th:selected="${roleOption == user.role}">Rola</option>
                                     </select>
+                                    <input type="hidden" th:if="${user.id != null}" name="role" th:value="${user.role}">
                                     <div th:if="${#fields.hasErrors('role')}" class="text-danger">
                                         <small th:errors="*{role}">Role error</small>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <div class="mb-3">
+                                <div class="mb-3" id="meterNumberGroup">
                                     <label for="meterNumber" class="form-label">Broj vodomjera</label>
                                     <input type="text" class="form-control" id="meterNumber" th:field="*{meterNumber}">
-                                    <div class="form-text">Ostavite prazno ako korisnik nema vodomjer</div>
+                                    <div class="form-text">Obavezno za korisnika vodovoda. Ne prikazuje se za administratora.</div>
                                 </div>
                             </div>
                         </div>
@@ -197,7 +198,7 @@
                     <h6>Napomene:</h6>
                     <ul class="small text-muted">
                         <li>Polja označena sa * su obavezna</li>
-                        <li>Administrator može biti i korisnik vodovoda ako ima broj vodomjera</li>
+                        <li>Administrator ne može imati broj vodomjera</li>
                         <li>Broj vodomjera mora biti jedinstven</li>
                         <li th:if="${user.id == null}">Ako ne unesete lozinku, sustav će je automatski generirati</li>
                         <li th:if="${user.id != null}">Ostavite polje lozinke prazno ako je ne želite mijenjati</li>
@@ -206,6 +207,29 @@
             </div>
         </div>
     </div>
+
+    <script>
+    (function() {
+      var roleEl = document.getElementById('role');
+      var meterGroup = document.getElementById('meterNumberGroup');
+      var meterInput = document.getElementById('meterNumber');
+      function toggleMeter() {
+        var isUser = roleEl && roleEl.value === 'USER';
+        if (meterGroup) { meterGroup.style.display = isUser ? '' : 'none'; }
+        if (meterInput) {
+          meterInput.required = isUser;
+          meterInput.disabled = !isUser;
+          if (!isUser) { meterInput.value = ''; }
+        }
+      }
+      if (roleEl) { roleEl.addEventListener('change', toggleMeter); }
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', toggleMeter);
+      } else {
+        toggleMeter();
+      }
+    })();
+    </script>
 </div>
 </body>
 </html>
