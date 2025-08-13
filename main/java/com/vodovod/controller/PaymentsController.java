@@ -36,9 +36,23 @@ public class PaymentsController {
     private PaymentRepository paymentRepository;
 
     @GetMapping
-    public String index(Model model) {
+    public String index(Model model,
+                        @RequestParam(value = "startDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+                        @RequestParam(value = "endDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         model.addAttribute("pageTitle", "Plaćanja");
-        model.addAttribute("payments", paymentRepository.findAllOrderByPaymentDateDesc());
+        if (startDate != null || endDate != null) {
+            if (startDate == null) {
+                startDate = LocalDate.of(1970, 1, 1);
+            }
+            if (endDate == null) {
+                endDate = LocalDate.now();
+            }
+            model.addAttribute("payments", paymentRepository.findByPaymentDateBetween(startDate, endDate));
+        } else {
+            model.addAttribute("payments", paymentRepository.findAllOrderByPaymentDateDesc());
+        }
+        model.addAttribute("startDate", startDate);
+        model.addAttribute("endDate", endDate);
         return "payments/index";
     }
     

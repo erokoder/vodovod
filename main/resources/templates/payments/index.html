@@ -23,6 +23,22 @@
                     <h6 class="m-0 font-weight-bold text-primary">Pregled plaćanja</h6>
                 </div>
                 <div class="card-body">
+                    <div class="mb-3">
+                        <form class="row g-2 align-items-end" method="get" th:action="@{/payments}">
+                            <div class="col-auto">
+                                <label for="startDate" class="form-label">Datum od</label>
+                                <input type="date" class="form-control" id="startDate" name="startDate" th:value="${startDate}">
+                            </div>
+                            <div class="col-auto">
+                                <label for="endDate" class="form-label">Datum do</label>
+                                <input type="date" class="form-control" id="endDate" name="endDate" th:value="${endDate}">
+                            </div>
+                            <div class="col-auto">
+                                <button type="submit" class="btn btn-primary">Filtriraj</button>
+                                <a href="/payments" class="btn btn-outline-secondary">Reset</a>
+                            </div>
+                        </form>
+                    </div>
                     <div class="table-responsive">
                         <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                             <thead>
