@@ -6,6 +6,7 @@ import com.vodovod.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -35,4 +36,8 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     
     @Query("SELECT COALESCE(SUM(p.amount),0) FROM Payment p WHERE p.user = :user AND p.bill IS NULL")
     BigDecimal sumPrepaymentByUser(User user);
+
+    // Flexible search by optional filters: user and payment date range
+    @Query("SELECT p FROM Payment p WHERE (:user IS NULL OR p.user = :user) AND (:startDate IS NULL OR p.paymentDate >= :startDate) AND (:endDate IS NULL OR p.paymentDate <= :endDate) ORDER BY p.paymentDate DESC")
+    List<Payment> search(@Param("user") User user, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 }
