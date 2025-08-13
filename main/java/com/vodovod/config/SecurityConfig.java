@@ -7,6 +7,12 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
+import org.springframework.security.web.savedrequest.RequestCache;
+import org.springframework.security.web.savedrequest.SavedRequest;
+
+import java.net.URI;
 
 @Configuration
 @EnableWebSecurity
@@ -15,6 +21,39 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public AuthenticationSuccessHandler authenticationSuccessHandler() {
+        return (request, response, authentication) -> {
+            RequestCache requestCache = new HttpSessionRequestCache();
+            SavedRequest savedRequest = requestCache.getRequest(request, response);
+
+            boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+            if (savedRequest != null) {
+                String redirectUrl = savedRequest.getRedirectUrl();
+                String path = URI.create(redirectUrl).getPath();
+                boolean adminOnlyTarget = "/dashboard".equals(path)
+                        || path.startsWith("/admin/")
+                        || path.startsWith("/users/")
+                        || path.startsWith("/readings/")
+                        || path.startsWith("/bills/")
+                        || path.startsWith("/payments/")
+                        || path.startsWith("/settings/");
+
+                if (adminOnlyTarget && !isAdmin) {
+                    response.sendRedirect("/my-bills");
+                    return;
+                }
+
+                response.sendRedirect(redirectUrl);
+                return;
+            }
+
+            response.sendRedirect(isAdmin ? "/dashboard" : "/my-bills");
+        };
     }
 
     @Bean
@@ -29,7 +68,7 @@ public class SecurityConfig {
             )
             .formLogin(form -> form
                 .loginPage("/login")
-                .defaultSuccessUrl("/dashboard", true)
+                .successHandler(authenticationSuccessHandler())
                 .failureUrl("/login?error=true")
                 .permitAll()
             )
