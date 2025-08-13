@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="hr" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main}">
+<head>
+    <title>Moj Račun</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="bi bi-person"></i>
+                        Moj Račun
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <strong>Ime i prezime:</strong>
+                        <span th:text="${user.fullName}">Ime Prezime</span>
+                    </div>
+                    <div class="mb-2">
+                        <strong>Korisničko ime:</strong>
+                        <span th:text="${user.username}">korisnik</span>
+                    </div>
+                    <div class="mb-2">
+                        <strong>Email:</strong>
+                        <span th:text="${user.email}">email@example.com</span>
+                    </div>
+                    <div th:if="${user.phoneNumber}" class="mb-2">
+                        <strong>Telefon:</strong>
+                        <span th:text="${user.phoneNumber}">+385 91 000 0000</span>
+                    </div>
+                    <div th:if="${user.address}" class="mb-2">
+                        <strong>Adresa:</strong>
+                        <span th:text="${user.address}">Adresa 1</span>
+                    </div>
+                    <div th:if="${user.meterNumber}" class="mb-2">
+                        <strong>Broj vodomjera:</strong>
+                        <span class="badge bg-info" th:text="${user.meterNumber}">VM001</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-secondary">
+                        <i class="bi bi-info-circle"></i>
+                        Informacije
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small">
+                        Ovdje možete pregledati svoje podatke. Za izmjene kontaktirajte administratora.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
