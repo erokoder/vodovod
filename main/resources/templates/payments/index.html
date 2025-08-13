@@ -55,7 +55,6 @@
                         <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                             <thead>
                             <tr>
-                                <th>ID</th>
                                 <th>Broj računa</th>
                                 <th>Korisnik</th>
                                 <th>Datum plaćanja</th>
@@ -70,7 +69,6 @@
                                 <td colspan="8" class="text-center">Nema podataka za prikaz</td>
                             </tr>
                             <tr th:each="p : ${payments}">
-                                <td th:text="${p.id}">-</td>
                                 <td>
                                     <span th:text="${p.bill != null ? p.bill.billNumber : '-'}"></span>
                                 </td>
