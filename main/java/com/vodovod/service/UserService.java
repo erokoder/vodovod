@@ -76,6 +76,16 @@ public class UserService {
             throw new RuntimeException("Email adresa već postoji: " + user.getEmail());
         }
 
+        // Validacije ovisno o roli
+        if (user.getRole() == Role.USER) {
+            if (user.getMeterNumber() == null || user.getMeterNumber().trim().isEmpty()) {
+                throw new RuntimeException("Broj vodomjera je obavezan za korisnika vodovoda.");
+            }
+        } else if (user.getRole() == Role.ADMIN) {
+            // Administrator ne smije imati broj vodomjera
+            user.setMeterNumber(null);
+        }
+
         // Provjeri jedinstvenost broja vodomjera
         if (user.getMeterNumber() != null && !user.getMeterNumber().trim().isEmpty()) {
             if (userRepository.findByMeterNumber(user.getMeterNumber()).isPresent()) {
@@ -109,6 +119,11 @@ public class UserService {
         User existingUser = userRepository.findById(user.getId())
                 .orElseThrow(() -> new RuntimeException("Korisnik nije pronađen"));
 
+        // Onemogući promjenu role nakon kreiranja
+        if (user.getRole() != existingUser.getRole()) {
+            throw new RuntimeException("Uloga se ne može mijenjati nakon kreiranja korisnika.");
+        }
+
         // Provjeri jedinstvenost korisničkog imena (osim za trenutnog korisnika)
         Optional<User> userWithSameUsername = userRepository.findByUsername(user.getUsername());
         if (userWithSameUsername.isPresent() && !userWithSameUsername.get().getId().equals(user.getId())) {
@@ -121,6 +136,15 @@ public class UserService {
             if (userWithSameEmail.isPresent() && !userWithSameEmail.get().getId().equals(user.getId())) {
                 throw new RuntimeException("Email adresa već postoji: " + user.getEmail());
             }
+        }
+
+        // Validacije ovisno o roli i namještanje broja vodomjera
+        if (existingUser.getRole() == Role.USER) {
+            if (user.getMeterNumber() == null || user.getMeterNumber().trim().isEmpty()) {
+                throw new RuntimeException("Broj vodomjera je obavezan za korisnika vodovoda.");
+            }
+        } else if (existingUser.getRole() == Role.ADMIN) {
+            user.setMeterNumber(null);
         }
 
         // Provjeri jedinstvenost broja vodomjera (osim za trenutnog korisnika)
