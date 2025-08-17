@@ -137,10 +137,10 @@
                         <!-- User Menu -->
                         <div sec:authorize="hasRole('USER')">
                             <li class="nav-item">
-                                <a class="nav-link" th:classappend="${activeMenu == 'my-account'} ? 'active'" 
-                                   href="/my-account">
+                                <a class="nav-link" th:classappend="${activeMenu == 'my-bills'} ? 'active'"
+                                   href="/my-bills">
                                     <i class="bi bi-person"></i>
-                                    Moj račun
+                                    Moji računi
                                 </a>
                             </li>
                         </div>
