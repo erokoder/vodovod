@@ -88,23 +88,21 @@
                                     <a th:href="@{/users/{id}/edit(id=${user.id})}" class="btn btn-sm btn-outline-primary" title="Uredi">
                                         <i class="bi bi-pencil"></i>
                                     </a>
-                                    <span th:if="${user.enabled}">
-                                        <form th:action="@{/users/{id}/delete(id=${user.id})}" method="post" class="d-inline"
-                                              onsubmit="return confirm('Jeste li sigurni da želite onemogućiti ovog korisnika?')">
-                                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                                            <button type="submit" class="btn btn-sm btn-outline-warning" title="Onemogući">
-                                                <i class="bi bi-x-circle"></i>
-                                            </button>
-                                        </form>
-                                    </span>
-                                    <span th:unless="${user.enabled}">
-                                        <form th:action="@{'/users/' + ${user.id} + '/enable'}" method="post" class="d-inline">
-                                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                                            <button type="submit" class="btn btn-sm btn-outline-success" title="Omogući">
-                                                <i class="bi bi-check-circle"></i>
-                                            </button>
-                                        </form>
-                                    </span>
+                                    <form th:if="${user.enabled}"
+                                          th:action="@{/users/{id}/delete(id=${user.id})}" method="post" class="d-inline"
+                                          onsubmit="return confirm('Jeste li sigurni da želite onemogućiti ovog korisnika?')">
+                                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                        <button type="submit" class="btn btn-sm btn-danger" title="Onemogući">
+                                            <i class="bi bi-x-circle"></i>
+                                        </button>
+                                    </form>
+                                    <form th:unless="${user.enabled}"
+                                          th:action="@{'/users/' + ${user.id} + '/enable'}" method="post" class="d-inline">
+                                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                        <button type="submit" class="btn btn-sm btn-outline-success" title="Omogući">
+                                            <i class="bi bi-check-circle"></i>
+                                        </button>
+                                    </form>
                                 </div>
                             </td>
                         </tr>
