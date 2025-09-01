@@ -81,15 +81,15 @@
                             </td>
                             <td th:text="${#temporals.format(user.createdAt, 'dd.MM.yyyy HH:mm')}">01.01.2024 10:00</td>
                             <td>
-                                <div class="btn-group" role="group">
-                                    <a th:href="@{/users/{id}(id=${user.id})}" class="btn btn-sm btn-outline-info" title="Pregled">
+                                <div>
+                                    <a th:href="@{/users/{id}(id=${user.id})}" class="btn btn-sm btn-outline-info me-1" title="Pregled">
                                         <i class="bi bi-eye"></i>
                                     </a>
-                                    <a th:href="@{/users/{id}/edit(id=${user.id})}" class="btn btn-sm btn-outline-primary" title="Uredi">
+                                    <a th:href="@{/users/{id}/edit(id=${user.id})}" class="btn btn-sm btn-outline-primary me-1" title="Uredi">
                                         <i class="bi bi-pencil"></i>
                                     </a>
                                     <form th:if="${user.enabled}"
-                                          th:action="@{/users/{id}/delete(id=${user.id})}" method="post" class="d-inline"
+                                          th:action="@{/users/{id}/delete(id=${user.id})}" method="post" class="d-inline me-1"
                                           onsubmit="return confirm('Jeste li sigurni da želite onemogućiti ovog korisnika?')">
                                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                                         <button type="submit" class="btn btn-sm btn-danger" title="Onemogući">
