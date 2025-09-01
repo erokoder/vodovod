@@ -43,9 +43,6 @@
             <input type="date" id="toDate" name="toDate" class="form-control"
                    th:value="${selectedToDate != null ? #temporals.format(selectedToDate, 'yyyy-MM-dd') : ''}">
         </div>
-        <div class="col-md-2 align-self-end">
-            <button type="submit" class="btn btn-outline-primary d-none d-md-inline"><i class="bi bi-funnel"></i> Filtriraj</button>
-        </div>
     </form>
 
     <!-- Content Row -->
