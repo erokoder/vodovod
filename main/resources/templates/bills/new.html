@@ -9,19 +9,6 @@
     <style>
         .form-section { margin-bottom: 1rem; }
     </style>
-    <script>
-        function updateTotals() {
-            try {
-                const consumption = parseFloat(document.getElementById('consumption').value || '0');
-                const price = parseFloat(document.getElementById('pricePerM3').value || '0');
-                const fixedFee = parseFloat(document.getElementById('fixedFee').value || '0');
-                const water = consumption * price;
-                const total = water + fixedFee;
-                document.getElementById('waterAmount').value = isFinite(water) ? water.toFixed(2) : '';
-                document.getElementById('totalAmount').value = isFinite(total) ? total.toFixed(2) : '';
-            } catch (e) {}
-        }
-    </script>
 </head>
 <body>
 <div layout:fragment="content">
@@ -34,11 +21,7 @@
 
     <div class="card">
         <div class="card-body">
-            <div class="alert alert-info">
-                Ručno kreiranje računa je u izradi. Za sada možete koristiti automatsko generiranje na stranici računa.
-            </div>
-
-            <form method="post" action="#" oninput="updateTotals()" th:if="${users}">
+            <form method="post" action="#" th:if="${users}">
                 <div class="row g-3 form-section">
                     <div class="col-md-6">
                         <label for="userId" class="form-label">Korisnik</label>
@@ -51,33 +34,40 @@
                     </div>
                     <div class="col-md-3">
                         <label for="issueDate" class="form-label">Datum izdavanja</label>
-                        <input type="date" id="issueDate" name="issueDate" class="form-control"
+                        <input type="date" id="issueDate" name="issueDate" class="form-control" readonly
                                th:value="${#temporals.format(T(java.time.LocalDate).now(), 'yyyy-MM-dd')}">
                     </div>
                     <div class="col-md-3">
                         <label for="dueDate" class="form-label">Rok plaćanja</label>
-                        <input type="date" id="dueDate" name="dueDate" class="form-control"
+                        <input type="date" id="dueDate" name="dueDate" class="form-control" readonly
                                th:value="${#temporals.format(T(java.time.LocalDate).now().plusDays(settings != null && settings.billDueDays != null ? settings.billDueDays : 30), 'yyyy-MM-dd')}">
                     </div>
                 </div>
 
                 <div class="row g-3 form-section">
                     <div class="col-md-3">
+                        <label for="periodFrom" class="form-label">Period od</label>
+                        <input type="date" id="periodFrom" name="periodFrom" class="form-control" readonly>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="periodTo" class="form-label">Period do</label>
+                        <input type="date" id="periodTo" name="periodTo" class="form-control" readonly>
+                    </div>
+                    <div class="col-md-3">
                         <label for="previousReading" class="form-label">Preth. očitanje</label>
-                        <input type="number" step="0.01" id="previousReading" name="previousReading" class="form-control">
+                        <input type="number" step="0.01" id="previousReading" name="previousReading" class="form-control" readonly>
                     </div>
                     <div class="col-md-3">
                         <label for="currentReading" class="form-label">Tren. očitanje</label>
-                        <input type="number" step="0.01" id="currentReading" name="currentReading" class="form-control"
-                               oninput="document.getElementById('consumption').value = (parseFloat(this.value||0) - parseFloat(document.getElementById('previousReading').value||0)).toFixed(2); updateTotals();">
+                        <input type="number" step="0.01" id="currentReading" name="currentReading" class="form-control" readonly>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-3 mt-3">
                         <label for="consumption" class="form-label">Potrošnja (m³)</label>
-                        <input type="number" step="0.01" id="consumption" name="consumption" class="form-control">
+                        <input type="number" step="0.01" id="consumption" name="consumption" class="form-control" readonly>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-3 mt-3">
                         <label for="pricePerM3" class="form-label">Cijena/m³</label>
-                        <input type="number" step="0.01" id="pricePerM3" name="pricePerM3" class="form-control" th:value="${settings != null && settings.waterPricePerM3 != null ? settings.waterPricePerM3 : 0}">
+                        <input type="number" step="0.01" id="pricePerM3" name="pricePerM3" class="form-control" readonly th:value="${settings != null && settings.waterPricePerM3 != null ? settings.waterPricePerM3 : 0}">
                     </div>
                 </div>
 
@@ -88,7 +78,7 @@
                     </div>
                     <div class="col-md-3">
                         <label for="fixedFee" class="form-label">Fiksno</label>
-                        <input type="number" step="0.01" id="fixedFee" name="fixedFee" class="form-control" th:value="${settings != null && settings.useFixedFee ? settings.fixedFee : 0}">
+                        <input type="number" step="0.01" id="fixedFee" name="fixedFee" class="form-control" readonly th:value="${settings != null && settings.useFixedFee ? settings.fixedFee : 0}">
                     </div>
                     <div class="col-md-3">
                         <label for="totalAmount" class="form-label">Ukupno</label>
@@ -108,7 +98,69 @@
 
 <div layout:fragment="scripts">
     <script>
-        document.addEventListener('DOMContentLoaded', updateTotals);
+        (function() {
+            const userSelect = document.getElementById('userId');
+            const issueDateEl = document.getElementById('issueDate');
+            const dueDateEl = document.getElementById('dueDate');
+            const periodFromEl = document.getElementById('periodFrom');
+            const periodToEl = document.getElementById('periodTo');
+            const prevEl = document.getElementById('previousReading');
+            const currEl = document.getElementById('currentReading');
+            const consEl = document.getElementById('consumption');
+            const priceEl = document.getElementById('pricePerM3');
+            const waterEl = document.getElementById('waterAmount');
+            const fixedEl = document.getElementById('fixedFee');
+            const totalEl = document.getElementById('totalAmount');
+
+            function clearFields() {
+                [periodFromEl, periodToEl, issueDateEl, dueDateEl].forEach(el => el && (el.value = ''));
+                [prevEl, currEl, consEl, priceEl, waterEl, fixedEl, totalEl].forEach(el => el && (el.value = ''));
+            }
+
+            function pad(n) { return n.toString().padStart(2, '0'); }
+            function toDateString(d) {
+                try {
+                    const dt = new Date(d);
+                    if (!isNaN(dt)) return dt.getFullYear() + '-' + pad(dt.getMonth()+1) + '-' + pad(dt.getDate());
+                } catch(e) {}
+                return '';
+            }
+
+            function fill(dto) {
+                if (!dto) { clearFields(); return; }
+                periodFromEl && (periodFromEl.value = toDateString(dto.periodFrom));
+                periodToEl && (periodToEl.value = toDateString(dto.periodTo));
+                issueDateEl && (issueDateEl.value = toDateString(dto.issueDate));
+                dueDateEl && (dueDateEl.value = toDateString(dto.dueDate));
+                prevEl && (prevEl.value = dto.previousReading);
+                currEl && (currEl.value = dto.currentReading);
+                consEl && (consEl.value = dto.consumption);
+                priceEl && (priceEl.value = dto.waterPricePerM3);
+                waterEl && (waterEl.value = dto.waterAmount);
+                fixedEl && (fixedEl.value = dto.fixedFeeApplied ? dto.fixedFeeAmount : 0);
+                const total = (Number(dto.waterAmount||0) + Number(dto.fixedFeeApplied ? dto.fixedFeeAmount||0 : 0));
+                totalEl && (totalEl.value = isFinite(total) ? total.toFixed(2) : '');
+            }
+
+            function fetchPreview(userId) {
+                if (!userId) { clearFields(); return; }
+                fetch('/bills/api/preview?userId=' + encodeURIComponent(userId))
+                    .then(r => r.json())
+                    .then(data => fill(data && data.length > 0 ? data[0] : null))
+                    .catch(() => clearFields());
+            }
+
+            userSelect && userSelect.addEventListener('change', function() {
+                fetchPreview(this.value);
+            });
+
+            // Init if preselected
+            if (userSelect && userSelect.value) {
+                fetchPreview(userSelect.value);
+            } else {
+                clearFields();
+            }
+        })();
     </script>
     
 </div>
