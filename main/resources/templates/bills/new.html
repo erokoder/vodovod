@@ -87,10 +87,11 @@
                     </div>
                 </div>
 
-                <div class="mt-3">
-                    <button type="button" class="btn btn-primary" disabled>
-                        <i class="bi bi-save"></i> Spremi (uskoro)
+                <div class="mt-3 d-flex gap-2">
+                    <button id="btn-generate" type="button" class="btn btn-success" disabled>
+                        <i class="bi bi-magic"></i> Generiraj
                     </button>
+                    <a href="/bills" class="btn btn-outline-secondary">Odustani</a>
                 </div>
             </form>
         </div>
@@ -112,6 +113,8 @@
             const waterEl = document.getElementById('waterAmount');
             const fixedEl = document.getElementById('fixedFee');
             const totalEl = document.getElementById('totalAmount');
+            const btnGenerate = document.getElementById('btn-generate');
+            let currentPreview = null;
 
             function clearFields() {
                 [periodFromEl, periodToEl, issueDateEl, dueDateEl].forEach(el => el && (el.value = ''));
@@ -133,6 +136,8 @@
                 fixedEl && (fixedEl.value = dto.fixedFeeApplied ? dto.fixedFeeAmount : 0);
                 const total = (Number(dto.waterAmount||0) + Number(dto.fixedFeeApplied ? (dto.fixedFeeAmount||0) : 0));
                 totalEl && (totalEl.value = isFinite(total) ? total.toFixed(2) : '');
+                currentPreview = dto;
+                if (btnGenerate) btnGenerate.disabled = false;
             }
 
             function fetchPreview(userId) {
@@ -149,6 +154,8 @@
                         const alertEl = document.getElementById('noData');
                         if (alertEl) { alertEl.classList.remove('d-none'); }
                         clearFields();
+                        currentPreview = null;
+                        if (btnGenerate) btnGenerate.disabled = true;
                     });
             }
 
@@ -162,6 +169,25 @@
             } else {
                 clearFields();
             }
+
+            // CSRF meta
+            const csrfTokenEl = document.querySelector('meta[name="_csrf"]');
+            const csrfHeaderEl = document.querySelector('meta[name="_csrf_header"]');
+            const csrfToken = csrfTokenEl ? csrfTokenEl.getAttribute('content') : null;
+            const csrfHeader = csrfHeaderEl ? csrfHeaderEl.getAttribute('content') : null;
+
+            btnGenerate && btnGenerate.addEventListener('click', function() {
+                if (!currentPreview) return;
+                const headers = { 'Content-Type': 'application/json' };
+                if (csrfHeader && csrfToken) { headers[csrfHeader] = csrfToken; }
+                fetch('/bills/api/generate', {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify([currentPreview])
+                }).then(r => { if (!r.ok) throw new Error('Request failed'); return r.json(); })
+                  .then(() => { window.location.href = '/bills'; })
+                  .catch(() => { alert('Greška pri generiranju računa.'); });
+            });
         })();
     </script>
     
