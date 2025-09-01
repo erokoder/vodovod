@@ -100,13 +100,15 @@
 <div layout:fragment="scripts">
     <script th:inline="none">
         $(document).ready(function() {
-            $('#dataTable').DataTable({
-                language: { url: "//cdn.datatables.net/plug-ins/1.10.19/i18n/Croatian.json" },
-                columnDefs: [{ targets: [0], visible: false, searchable: false }],
-                order: [[ 3, "desc" ]],
-                pageLength: 25,
-                responsive: true
-            });
+            if ($.fn && $.fn.DataTable) {
+                $('#dataTable').DataTable({
+                    language: { url: "//cdn.datatables.net/plug-ins/1.10.19/i18n/Croatian.json" },
+                    columnDefs: [{ targets: [0], visible: false, searchable: false }],
+                    order: [[ 3, "desc" ]],
+                    pageLength: 25,
+                    responsive: true
+                });
+            }
 
             // Auto-submit filters on change (same as bills)
             (function() {

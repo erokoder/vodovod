@@ -101,15 +101,17 @@
 <div layout:fragment="scripts">
 <script th:inline="none">
 $(document).ready(function() {
-    $('#dataTable').DataTable({
-        "language": {
-            "url": "//cdn.datatables.net/plug-ins/1.10.19/i18n/Croatian.json"
-        },
-        // Default order: by user (now col 0) asc, then by date (now col 1) desc
-        "order": [[ 0, "asc" ], [ 1, "desc" ]],
-        "pageLength": 25,
-        "responsive": true
-    });
+    if ($.fn && $.fn.DataTable) {
+        $('#dataTable').DataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.10.19/i18n/Croatian.json"
+            },
+            // Default order: by user (now col 0) asc, then by date (now col 1) desc
+            "order": [[ 0, "asc" ], [ 1, "desc" ]],
+            "pageLength": 25,
+            "responsive": true
+        });
+    }
 
     // Auto-submit filters on change (same as bills)
     (function() {
