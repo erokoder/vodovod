@@ -108,11 +108,25 @@
                 responsive: true
             });
 
-            // Auto-submit filters on change
-            const $form = $('#filters-form');
-            $form.find('select, input').on('change', function() {
-                $form.trigger('submit');
-            });
+            // Auto-submit filters on change (vanilla with debounce)
+            (function() {
+                const form = document.getElementById('filters-form');
+                if (!form) return;
+                let debounceTimer = null;
+                function submitForm() {
+                    if (debounceTimer) clearTimeout(debounceTimer);
+                    debounceTimer = setTimeout(function() {
+                        if (typeof form.requestSubmit === 'function') { form.requestSubmit(); } else { form.submit(); }
+                    }, 200);
+                }
+                const inputs = form.querySelectorAll('select, input');
+                inputs.forEach(function(el) {
+                    el.addEventListener('change', submitForm);
+                    if (el.tagName === 'SELECT' || el.type === 'date' || el.type === 'text') {
+                        el.addEventListener('input', submitForm);
+                    }
+                });
+            })();
         });
     </script>
 </div>
