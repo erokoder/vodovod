@@ -24,7 +24,7 @@
     </div>
 
     <!-- Filters -->
-    <form class="row g-3 mb-3" method="get" action="/readings">
+    <form class="row g-3 mb-3" method="get" action="/readings" id="filters-form">
         <div class="col-md-4">
             <label for="userId" class="form-label">Korisnik</label>
             <select id="userId" name="userId" class="form-select">
@@ -45,7 +45,7 @@
             <input type="date" id="toDate" name="toDate" class="form-control" th:value="${toDate}">
         </div>
         <div class="col-md-2 align-self-end">
-            <button type="submit" class="btn btn-outline-primary"><i class="bi bi-funnel"></i> Filtriraj</button>
+            <button type="submit" class="btn btn-outline-primary d-none d-md-inline"><i class="bi bi-funnel"></i> Filtriraj</button>
         </div>
     </form>
 
@@ -109,6 +109,12 @@ $(document).ready(function() {
         "order": [[ 0, "asc" ], [ 1, "desc" ]],
         "pageLength": 25,
         "responsive": true
+    });
+
+    // Auto-submit filters on change
+    const $form = $('#filters-form');
+    $form.find('select, input').on('change', function() {
+        $form.trigger('submit');
     });
 });
 </script>
