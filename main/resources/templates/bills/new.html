@@ -21,6 +21,7 @@
 
     <div class="card">
         <div class="card-body">
+            <div id="noData" class="alert alert-info d-none">Nema podataka za odabranog korisnika.</div>
             <form method="post" action="#" th:if="${users}">
                 <div class="row g-3 form-section">
                     <div class="col-md-6">
@@ -117,28 +118,20 @@
                 [prevEl, currEl, consEl, priceEl, waterEl, fixedEl, totalEl].forEach(el => el && (el.value = ''));
             }
 
-            function pad(n) { return n.toString().padStart(2, '0'); }
-            function toDateString(d) {
-                try {
-                    const dt = new Date(d);
-                    if (!isNaN(dt)) return dt.getFullYear() + '-' + pad(dt.getMonth()+1) + '-' + pad(dt.getDate());
-                } catch(e) {}
-                return '';
-            }
-
             function fill(dto) {
                 if (!dto) { clearFields(); return; }
-                periodFromEl && (periodFromEl.value = toDateString(dto.periodFrom));
-                periodToEl && (periodToEl.value = toDateString(dto.periodTo));
-                issueDateEl && (issueDateEl.value = toDateString(dto.issueDate));
-                dueDateEl && (dueDateEl.value = toDateString(dto.dueDate));
+                // DTO je LocalDate string u formatu YYYY-MM-DD; direktno ga upiši
+                periodFromEl && (periodFromEl.value = dto.periodFrom || '');
+                periodToEl && (periodToEl.value = dto.periodTo || '');
+                issueDateEl && (issueDateEl.value = dto.issueDate || '');
+                dueDateEl && (dueDateEl.value = dto.dueDate || '');
                 prevEl && (prevEl.value = dto.previousReading);
                 currEl && (currEl.value = dto.currentReading);
                 consEl && (consEl.value = dto.consumption);
                 priceEl && (priceEl.value = dto.waterPricePerM3);
                 waterEl && (waterEl.value = dto.waterAmount);
                 fixedEl && (fixedEl.value = dto.fixedFeeApplied ? dto.fixedFeeAmount : 0);
-                const total = (Number(dto.waterAmount||0) + Number(dto.fixedFeeApplied ? dto.fixedFeeAmount||0 : 0));
+                const total = (Number(dto.waterAmount||0) + Number(dto.fixedFeeApplied ? (dto.fixedFeeAmount||0) : 0));
                 totalEl && (totalEl.value = isFinite(total) ? total.toFixed(2) : '');
             }
 
@@ -146,8 +139,17 @@
                 if (!userId) { clearFields(); return; }
                 fetch('/bills/api/preview?userId=' + encodeURIComponent(userId))
                     .then(r => r.json())
-                    .then(data => fill(data && data.length > 0 ? data[0] : null))
-                    .catch(() => clearFields());
+                    .then(data => {
+                        const has = data && data.length > 0;
+                        const alertEl = document.getElementById('noData');
+                        if (alertEl) { alertEl.classList.toggle('d-none', !!has); }
+                        fill(has ? data[0] : null);
+                    })
+                    .catch(() => {
+                        const alertEl = document.getElementById('noData');
+                        if (alertEl) { alertEl.classList.remove('d-none'); }
+                        clearFields();
+                    });
             }
 
             userSelect && userSelect.addEventListener('change', function() {
