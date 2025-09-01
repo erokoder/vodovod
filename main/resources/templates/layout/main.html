@@ -48,6 +48,32 @@
             box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
             border: 1px solid rgba(0, 0, 0, 0.125);
         }
+		/* Flatpickr color overrides to match Bootstrap primary (#0d6efd) */
+		.flatpickr-day.selected,
+		.flatpickr-day.startRange,
+		.flatpickr-day.endRange,
+		.flatpickr-day.selected:hover,
+		.flatpickr-day.startRange:hover,
+		.flatpickr-day.endRange:hover,
+		.flatpickr-day.selected:focus,
+		.flatpickr-day.startRange:focus,
+		.flatpickr-day.endRange:focus {
+			background: #0d6efd;
+			border-color: #0d6efd;
+			color: #fff;
+		}
+		.flatpickr-day.inRange,
+		.flatpickr-day.inRange:hover {
+			background: rgba(13,110,253,.15);
+			border-color: rgba(13,110,253,.15);
+		}
+		.flatpickr-day.today {
+			border-color: #0d6efd;
+		}
+		.flatpickr-months .flatpickr-prev-month svg,
+		.flatpickr-months .flatpickr-next-month svg {
+			fill: #0d6efd;
+		}
     </style>
 </head>
 <body>
