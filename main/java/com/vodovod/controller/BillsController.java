@@ -72,6 +72,15 @@ public class BillsController {
         return "bills/index";
     }
 
+    @GetMapping("/new")
+    public String newBill(Model model) {
+        model.addAttribute("pageTitle", "Novi račun");
+        model.addAttribute("activeMenu", "bills");
+        model.addAttribute("users", userService.getActiveWaterUsers());
+        model.addAttribute("settings", settingsService.getCurrentSettingsOrNew());
+        return "bills/new";
+    }
+
     @GetMapping("/api/preview")
     @ResponseBody
     public List<BillPreviewDTO> preview(@RequestParam(value = "userId", required = false) Long userId) {
