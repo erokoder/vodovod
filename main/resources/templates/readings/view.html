@@ -16,6 +16,12 @@
             <a th:href="@{/users/{id}(id=${reading.user.id})}" class="btn btn-outline-primary btn-sm">
                 <i class="bi bi-person"></i> Korisnik
             </a>
+            <form th:action="@{/readings/{id}/storno(id=${reading.id})}" method="post" style="display:inline" onsubmit="return confirm('Jeste li sigurni da želite stornirati ovo očitanje? Ova akcija je nepovratna.');">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <button type="submit" class="btn btn-danger btn-sm">
+                    <i class="bi bi-x-circle"></i> Storno
+                </button>
+            </form>
         </div>
     </div>
 

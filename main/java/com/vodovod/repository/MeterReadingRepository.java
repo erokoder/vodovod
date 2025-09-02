@@ -46,4 +46,8 @@ public interface MeterReadingRepository extends JpaRepository<MeterReading, Long
     // Date range filtering across all users
     List<MeterReading> findByReadingDateGreaterThanEqualOrderByReadingDateDesc(LocalDate startDate);
     List<MeterReading> findByReadingDateLessThanEqualOrderByReadingDateDesc(LocalDate endDate);
+
+    // Previous/next helpers around a given date for a user
+    Optional<MeterReading> findTopByUserAndReadingDateBeforeOrderByReadingDateDesc(User user, LocalDate readingDate);
+    List<MeterReading> findByUserAndReadingDateAfterOrderByReadingDateAsc(User user, LocalDate readingDate);
 }

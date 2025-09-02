@@ -151,6 +151,23 @@ public class ReadingsController {
     }
 
     /**
+     * Storno očitanja - briše očitanje i rekalkulira lanac kao da nije postojalo
+     */
+    @PostMapping("/{id}/storno")
+    public String storno(@PathVariable Long id,
+                         RedirectAttributes redirect,
+                         Authentication auth) {
+        try {
+            meterReadingService.stornoReading(id, auth != null ? auth.getName() : "system");
+            redirect.addFlashAttribute("successMessage", "Očitanje je stornirano.");
+        } catch (Exception ex) {
+            redirect.addFlashAttribute("errorMessage", "Greška pri stornu: " + ex.getMessage());
+            return "redirect:/readings/" + id;
+        }
+        return "redirect:/readings";
+    }
+
+    /**
      * API endpoint za dohvaćanje prethodnog očitanja korisnika
      */
     @GetMapping("/api/user/{userId}/latest-reading")
