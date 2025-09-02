@@ -52,7 +52,7 @@ public class BillService {
             if (user.getMeterNumber() == null) {
                 continue;
             }
-            List<MeterReading> unbilled = meterReadingRepository.findUnbilledReadingsByUser(user);
+            List<MeterReading> unbilled = meterReadingRepository.findUnbilledNonCancelledReadingsByUser(user);
             if (unbilled.isEmpty()) {
                 continue;
             }
@@ -136,7 +136,7 @@ public class BillService {
             billRepository.save(bill);
 
             // Mark all readings up to endReadingId as billed for this user
-            List<MeterReading> unbilled = meterReadingRepository.findUnbilledReadingsByUser(user);
+            List<MeterReading> unbilled = meterReadingRepository.findUnbilledNonCancelledReadingsByUser(user);
             for (MeterReading r : unbilled) {
                 if (!r.isBillGenerated()) {
                     r.setBillGenerated(true);

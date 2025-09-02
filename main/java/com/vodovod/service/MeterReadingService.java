@@ -40,24 +40,24 @@ public class MeterReadingService {
     }
 
     /**
-     * Dohvaća najnovije očitanje za korisnika
+     * Dohvaća najnovije ne-stornirano očitanje za korisnika
      */
     public Optional<MeterReading> getLatestReadingByUser(User user) {
-        return meterReadingRepository.findTopByUserOrderByReadingDateDesc(user);
+        return meterReadingRepository.findTopByUserAndCancelledFalseOrderByReadingDateDesc(user);
     }
 
     /**
-     * Dohvaća sva očitanja za korisnika sortirana po datumu
+     * Dohvaća sva ne-stornirana očitanja za korisnika sortirana po datumu
      */
     public List<MeterReading> getReadingsByUser(User user) {
-        return meterReadingRepository.findByUserOrderByReadingDateDesc(user);
+        return meterReadingRepository.findByUserAndCancelledFalseOrderByReadingDateDesc(user);
     }
 
     /**
-     * Provjerava postoji li već očitanje za korisnika na određeni datum
+     * Provjerava postoji li već ne-stornirano očitanje za korisnika na određeni datum
      */
     public boolean existsReadingForUserAndDate(User user, LocalDate date) {
-        return meterReadingRepository.findByUserAndReadingDate(user, date).isPresent();
+        return meterReadingRepository.findByUserAndReadingDateAndCancelledFalse(user, date).isPresent();
     }
 
     /**
@@ -88,17 +88,17 @@ public class MeterReadingService {
     }
 
     /**
-     * Dohvaća sva očitanja sortirana po korisniku (ime) pa po datumu (najnovija prva)
+     * Dohvaća sva ne-stornirana očitanja sortirana po korisniku (ime) pa po datumu (najnovija prva)
      */
     public List<MeterReading> getAllReadings() {
-        return meterReadingRepository.findAllOrderByUserNameAndDateDesc();
+        return meterReadingRepository.findAllNonCancelledOrderByUserNameAndDateDesc();
     }
 
     /**
-     * Dohvaća očitanja bez generiranih računa
+     * Dohvaća ne-stornirana očitanja bez generiranih računa
      */
     public List<MeterReading> getReadingsWithoutBill() {
-        return meterReadingRepository.findReadingsWithoutBill();
+        return meterReadingRepository.findNonCancelledReadingsWithoutBill();
     }
 
     /**
@@ -133,5 +133,109 @@ public class MeterReadingService {
         } else {
             return getReadingsByUser(user);
         }
+    }
+
+    /**
+     * Stornira očitanje i ažurira sva sljedeća očitanja
+     */
+    @Transactional
+    public void cancelReading(Long readingId, String cancelledBy, String reason) {
+        // Pronađi očitanje koje se stornira
+        MeterReading readingToCancel = meterReadingRepository.findById(readingId)
+                .orElseThrow(() -> new RuntimeException("Očitanje nije pronađeno"));
+
+        // Provjeri da li je već stornirano
+        if (readingToCancel.isCancelled()) {
+            throw new RuntimeException("Očitanje je već stornirano");
+        }
+
+        // Provjeri da li je generiran račun za ovo očitanje
+        if (readingToCancel.isBillGenerated()) {
+            throw new RuntimeException("Ne možete stornirati očitanje za koje je već generiran račun");
+        }
+
+        // Storniraj očitanje
+        readingToCancel.cancel(cancelledBy, reason);
+        meterReadingRepository.save(readingToCancel);
+
+        // Pronađi sva sljedeća očitanja za istog korisnika
+        List<MeterReading> subsequentReadings = meterReadingRepository
+                .findSubsequentReadingsByUser(readingToCancel.getUser(), readingToCancel.getReadingDate());
+
+        // Ažuriraj prethodne vrijednosti za sva sljedeća očitanja
+        updateSubsequentReadings(subsequentReadings, readingToCancel.getUser());
+    }
+
+    /**
+     * Ažurira prethodne vrijednosti za sljedeća očitanja nakon storniranja
+     */
+    private void updateSubsequentReadings(List<MeterReading> subsequentReadings, User user) {
+        if (subsequentReadings.isEmpty()) {
+            return;
+        }
+
+        // Prvo očitanje u listi treba da se ažurira sa prethodnim ne-storniranim očitanjem
+        MeterReading firstSubsequent = subsequentReadings.get(0);
+        
+        // Pronađi prethodno ne-stornirano očitanje prije prvog sljedećeg
+        Optional<MeterReading> previousValidReading = findPreviousValidReading(user, firstSubsequent.getReadingDate());
+        
+        BigDecimal previousValue = previousValidReading.isPresent() 
+                ? previousValidReading.get().getReadingValue() 
+                : BigDecimal.ZERO;
+
+        // Ažuriraj prvo sljedeće očitanje
+        firstSubsequent.setPreviousReadingValue(previousValue);
+        firstSubsequent.calculateConsumption();
+        meterReadingRepository.save(firstSubsequent);
+
+        // Ažuriraj ostala sljedeća očitanja u nizu
+        for (int i = 1; i < subsequentReadings.size(); i++) {
+            MeterReading current = subsequentReadings.get(i);
+            MeterReading previous = subsequentReadings.get(i - 1);
+            
+            current.setPreviousReadingValue(previous.getReadingValue());
+            current.calculateConsumption();
+            meterReadingRepository.save(current);
+        }
+    }
+
+    /**
+     * Pronalazi prethodno validno (ne-stornirano) očitanje prije datog datuma
+     */
+    private Optional<MeterReading> findPreviousValidReading(User user, LocalDate beforeDate) {
+        List<MeterReading> allReadings = meterReadingRepository.findByUserAndCancelledFalseOrderByReadingDateDesc(user);
+        return allReadings.stream()
+                .filter(reading -> reading.getReadingDate().isBefore(beforeDate))
+                .findFirst();
+    }
+
+    /**
+     * Provjeri da li se očitanje može stornirati
+     */
+    public boolean canCancelReading(Long readingId) {
+        Optional<MeterReading> readingOpt = meterReadingRepository.findById(readingId);
+        if (readingOpt.isEmpty()) {
+            return false;
+        }
+        
+        MeterReading reading = readingOpt.get();
+        return !reading.isCancelled() && !reading.isBillGenerated();
+    }
+
+    /**
+     * Dohvaća sva očitanja (uključujući stornirana) sortirana po korisniku i datumu
+     * Korisiti se za admin pregled
+     */
+    public List<MeterReading> getAllReadingsIncludingCancelled() {
+        return meterReadingRepository.findAllOrderByUserNameAndDateDesc();
+    }
+
+    /**
+     * Dohvaća sva očitanja za korisnika (uključujući stornirana) sortirana po datumu
+     * Korisiti se za admin pregled
+     */
+    public List<MeterReading> getReadingsByUserIncludingCancelled(User user) {
+        return meterReadingRepository.findByUserOrderByReadingDateDesc(user);
     }
 }

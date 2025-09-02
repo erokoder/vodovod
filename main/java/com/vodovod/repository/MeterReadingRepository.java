@@ -46,4 +46,26 @@ public interface MeterReadingRepository extends JpaRepository<MeterReading, Long
     // Date range filtering across all users
     List<MeterReading> findByReadingDateGreaterThanEqualOrderByReadingDateDesc(LocalDate startDate);
     List<MeterReading> findByReadingDateLessThanEqualOrderByReadingDateDesc(LocalDate endDate);
+
+    // Non-cancelled readings queries
+    List<MeterReading> findByUserAndCancelledFalseOrderByReadingDateDesc(User user);
+    
+    @Query("SELECT mr FROM MeterReading mr WHERE mr.user = :user AND mr.cancelled = false ORDER BY mr.readingDate DESC")
+    Optional<MeterReading> findTopByUserAndCancelledFalseOrderByReadingDateDesc(User user);
+    
+    @Query("SELECT mr FROM MeterReading mr WHERE mr.user = :user AND mr.readingDate = :readingDate AND mr.cancelled = false")
+    Optional<MeterReading> findByUserAndReadingDateAndCancelledFalse(User user, LocalDate readingDate);
+    
+    @Query("SELECT mr FROM MeterReading mr WHERE mr.billGenerated = false AND mr.cancelled = false")
+    List<MeterReading> findNonCancelledReadingsWithoutBill();
+    
+    @Query("SELECT mr FROM MeterReading mr WHERE mr.user = :user AND mr.billGenerated = false AND mr.cancelled = false ORDER BY mr.readingDate ASC")
+    List<MeterReading> findUnbilledNonCancelledReadingsByUser(User user);
+    
+    @Query("SELECT mr FROM MeterReading mr WHERE mr.cancelled = false ORDER BY mr.user.lastName ASC, mr.user.firstName ASC, mr.readingDate DESC")
+    List<MeterReading> findAllNonCancelledOrderByUserNameAndDateDesc();
+    
+    // Find readings that come after a specific reading for the same user
+    @Query("SELECT mr FROM MeterReading mr WHERE mr.user = :user AND mr.readingDate > :readingDate AND mr.cancelled = false ORDER BY mr.readingDate ASC")
+    List<MeterReading> findSubsequentReadingsByUser(User user, LocalDate readingDate);
 }

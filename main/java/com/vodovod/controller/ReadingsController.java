@@ -52,13 +52,26 @@ public class ReadingsController {
         if (userId != null) {
             Optional<User> userOpt = userService.getUserById(userId);
             if (userOpt.isPresent()) {
-                readings = meterReadingService.getReadingsByUserAndDateRange(userOpt.get(), fromDate, toDate);
+                // For admin view, show all readings including cancelled ones
+                if (fromDate == null && toDate == null) {
+                    readings = meterReadingService.getReadingsByUserIncludingCancelled(userOpt.get());
+                } else {
+                    readings = meterReadingService.getReadingsByUserAndDateRange(userOpt.get(), fromDate, toDate);
+                }
                 model.addAttribute("selectedUserId", userId);
+            } else {
+                if (fromDate == null && toDate == null) {
+                    readings = meterReadingService.getAllReadingsIncludingCancelled();
+                } else {
+                    readings = meterReadingService.getAllReadingsByDateRange(fromDate, toDate);
+                }
+            }
+        } else {
+            if (fromDate == null && toDate == null) {
+                readings = meterReadingService.getAllReadingsIncludingCancelled();
             } else {
                 readings = meterReadingService.getAllReadingsByDateRange(fromDate, toDate);
             }
-        } else {
-            readings = meterReadingService.getAllReadingsByDateRange(fromDate, toDate);
         }
         model.addAttribute("pageTitle", "Očitanja");
         model.addAttribute("readings", readings);
@@ -234,6 +247,69 @@ public class ReadingsController {
                             }
                         }
                     }
+                }
+            }
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
+    }
+
+    /**
+     * Stornira očitanje
+     */
+    @PostMapping("/{id}/cancel")
+    public String cancelReading(@PathVariable Long id,
+                              @RequestParam String reason,
+                              Authentication authentication,
+                              RedirectAttributes redirectAttributes) {
+        try {
+            // Provjeri da li se očitanje može stornirati
+            if (!meterReadingService.canCancelReading(id)) {
+                redirectAttributes.addFlashAttribute("errorMessage", 
+                    "Očitanje se ne može stornirati. Možda je već stornirano ili je već generiran račun.");
+                return "redirect:/readings/" + id;
+            }
+
+            // Storniraj očitanje
+            meterReadingService.cancelReading(id, authentication.getName(), reason);
+            
+            redirectAttributes.addFlashAttribute("successMessage", 
+                "Očitanje je uspješno stornirano!");
+            return "redirect:/readings/" + id;
+
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", 
+                "Greška prilikom storniranja očitanja: " + e.getMessage());
+            return "redirect:/readings/" + id;
+        }
+    }
+
+    /**
+     * API endpoint za provjeru da li se očitanje može stornirati
+     */
+    @GetMapping("/api/{id}/can-cancel")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> canCancelReading(@PathVariable Long id) {
+        try {
+            boolean canCancel = meterReadingService.canCancelReading(id);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("canCancel", canCancel);
+            
+            if (!canCancel) {
+                Optional<MeterReading> reading = meterReadingService.findById(id);
+                if (reading.isPresent()) {
+                    if (reading.get().isCancelled()) {
+                        response.put("reason", "Očitanje je već stornirano");
+                    } else if (reading.get().isBillGenerated()) {
+                        response.put("reason", "Račun je već generiran za ovo očitanje");
+                    }
+                } else {
+                    response.put("reason", "Očitanje nije pronađeno");
                 }
             }
             

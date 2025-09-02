@@ -46,6 +46,18 @@ public class MeterReading {
     @Column(name = "created_by")
     private String createdBy; // Ko je unio očitanje
     
+    @Column(name = "cancelled")
+    private boolean cancelled = false; // Da li je očitanje stornirano
+    
+    @Column(name = "cancelled_at")
+    private LocalDateTime cancelledAt; // Kada je stornirano
+    
+    @Column(name = "cancelled_by")
+    private String cancelledBy; // Ko je stornirao očitanje
+    
+    @Column(name = "cancellation_reason")
+    private String cancellationReason; // Razlog storniranja
+    
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
@@ -141,10 +153,52 @@ public class MeterReading {
         this.createdBy = createdBy;
     }
     
+    public boolean isCancelled() {
+        return cancelled;
+    }
+    
+    public void setCancelled(boolean cancelled) {
+        this.cancelled = cancelled;
+    }
+    
+    public LocalDateTime getCancelledAt() {
+        return cancelledAt;
+    }
+    
+    public void setCancelledAt(LocalDateTime cancelledAt) {
+        this.cancelledAt = cancelledAt;
+    }
+    
+    public String getCancelledBy() {
+        return cancelledBy;
+    }
+    
+    public void setCancelledBy(String cancelledBy) {
+        this.cancelledBy = cancelledBy;
+    }
+    
+    public String getCancellationReason() {
+        return cancellationReason;
+    }
+    
+    public void setCancellationReason(String cancellationReason) {
+        this.cancellationReason = cancellationReason;
+    }
+    
     // Utility methods
     public void calculateConsumption() {
         if (previousReadingValue != null && readingValue != null) {
             this.consumption = readingValue.subtract(previousReadingValue);
         }
+    }
+    
+    /**
+     * Stornira očitanje
+     */
+    public void cancel(String cancelledBy, String reason) {
+        this.cancelled = true;
+        this.cancelledAt = LocalDateTime.now();
+        this.cancelledBy = cancelledBy;
+        this.cancellationReason = reason;
     }
 }
