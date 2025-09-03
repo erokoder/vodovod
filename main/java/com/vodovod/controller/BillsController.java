@@ -52,6 +52,20 @@ public class BillsController {
             Model model) {
         model.addAttribute("pageTitle", "Računi");
         model.addAttribute("activeMenu", "bills");
+        model.addAttribute("pageActions", java.util.List.of(
+                java.util.Map.of(
+                        "url", "/bills/new",
+                        "cssClass", "btn btn-primary btn-sm",
+                        "label", "Novi račun",
+                        "id", "btn-new-bill"
+                ),
+                java.util.Map.of(
+                        "url", "#",
+                        "cssClass", "btn btn-success btn-sm",
+                        "label", "Automatski generiraj",
+                        "id", "btn-generate"
+                )
+        ));
         List<User> users = userService.getActiveWaterUsers();
         model.addAttribute("users", users);
 
@@ -76,6 +90,14 @@ public class BillsController {
     public String newBill(Model model) {
         model.addAttribute("pageTitle", "Novi račun");
         model.addAttribute("activeMenu", "bills");
+        model.addAttribute("pageActions", java.util.List.of(
+                java.util.Map.of(
+                        "url", "/bills",
+                        "cssClass", "btn btn-outline-secondary btn-sm",
+                        "label", "Natrag",
+                        "id", "btn-back"
+                )
+        ));
         model.addAttribute("users", userService.getActiveWaterUsers());
         model.addAttribute("settings", settingsService.getCurrentSettingsOrNew());
         return "bills/new";

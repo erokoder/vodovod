@@ -215,7 +215,7 @@
                     <h1 class="h2" th:text="${pageTitle}">Page Title</h1>
                     <div class="btn-toolbar mb-2 mb-md-0" th:if="${pageActions}">
                         <div class="btn-group me-2" th:each="action : ${pageActions}">
-                            <a th:href="${action.url}" th:class="${action.cssClass}" th:text="${action.label}"></a>
+                            <a th:href="${action.url}" th:class="${action.cssClass}" th:attr="id=${action.id}" th:text="${action.label}"></a>
                         </div>
                     </div>
                 </div>

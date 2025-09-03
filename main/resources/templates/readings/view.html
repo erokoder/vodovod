@@ -7,17 +7,7 @@
 </head>
 <body>
 <div layout:fragment="content">
-    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800" th:text="${pageTitle}">Pregled očitanja</h1>
-        <div>
-            <a href="/readings" class="btn btn-secondary btn-sm">
-                <i class="bi bi-arrow-left"></i> Nazad na listu
-            </a>
-            <a th:href="@{/users/{id}(id=${reading.user.id})}" class="btn btn-outline-primary btn-sm">
-                <i class="bi bi-person"></i> Korisnik
-            </a>
-        </div>
-    </div>
+    
 
     <div class="row">
         <div class="col-lg-8">

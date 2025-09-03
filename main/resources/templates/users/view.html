@@ -16,34 +16,7 @@
         </ol>
     </nav>
 
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1 class="h3 mb-0">
-            <span th:text="${user.fullName}">Ime Prezime</span>
-            <span th:if="${user.role.name() == 'ADMIN'}" class="badge bg-danger ms-2">
-                <i class="bi bi-shield-check"></i>
-                Administrator
-            </span>
-            <span th:if="${user.role.name() == 'USER'}" class="badge bg-primary ms-2">
-                <i class="bi bi-person"></i>
-                Korisnik
-            </span>
-            <span th:if="${!user.enabled}" class="badge bg-secondary ms-2">
-                <i class="bi bi-x-circle"></i>
-                Neaktivan
-            </span>
-        </h1>
-        <div>
-            <a th:href="@{/users/{id}/edit(id=${user.id})}" class="btn btn-primary">
-                <i class="bi bi-pencil"></i>
-                Uredi
-            </a>
-            <a href="/users" class="btn btn-secondary">
-                <i class="bi bi-arrow-left"></i>
-                Povratak
-            </a>
-        </div>
-    </div>
+    
 
     <div class="row">
         <!-- User Information -->

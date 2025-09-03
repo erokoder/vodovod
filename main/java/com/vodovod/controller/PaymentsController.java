@@ -43,6 +43,14 @@ public class PaymentsController {
                         @RequestParam(value = "endDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         model.addAttribute("pageTitle", "Plaćanja");
         model.addAttribute("activeMenu", "payments");
+        model.addAttribute("pageActions", java.util.List.of(
+                java.util.Map.of(
+                        "url", "/payments/new",
+                        "cssClass", "btn btn-primary btn-sm",
+                        "label", "Novo plaćanje",
+                        "id", "btn-new-payment"
+                )
+        ));
         // Populate users for filter dropdown
         model.addAttribute("users", userService.getActiveWaterUsers());
         model.addAttribute("selectedUserId", userId);
@@ -67,6 +75,15 @@ public class PaymentsController {
     @GetMapping("/new")
     public String newPayment(Model model) {
         model.addAttribute("pageTitle", "Novo plaćanje");
+        model.addAttribute("activeMenu", "payments");
+        model.addAttribute("pageActions", java.util.List.of(
+                java.util.Map.of(
+                        "url", "/payments",
+                        "cssClass", "btn btn-outline-secondary btn-sm",
+                        "label", "Natrag",
+                        "id", "btn-back"
+                )
+        ));
         model.addAttribute("users", userService.getActiveWaterUsers());
         return "payments/new";
     }

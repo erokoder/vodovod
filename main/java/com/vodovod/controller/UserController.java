@@ -29,6 +29,14 @@ public class UserController {
         
         model.addAttribute("pageTitle", "Korisnici");
         model.addAttribute("activeMenu", "users");
+        model.addAttribute("pageActions", java.util.List.of(
+                java.util.Map.of(
+                        "url", "/users/new",
+                        "cssClass", "btn btn-primary btn-sm",
+                        "label", "Dodaj Korisnika",
+                        "id", "btn-new-user"
+                )
+        ));
         model.addAttribute("users", users);
         
         return "users/list";
@@ -41,6 +49,14 @@ public class UserController {
         
         model.addAttribute("pageTitle", "Novi Korisnik");
         model.addAttribute("activeMenu", "users");
+        model.addAttribute("pageActions", java.util.List.of(
+                java.util.Map.of(
+                        "url", "/users",
+                        "cssClass", "btn btn-outline-secondary btn-sm",
+                        "label", "Natrag",
+                        "id", "btn-back"
+                )
+        ));
         model.addAttribute("user", user);
         model.addAttribute("roles", Role.values());
         
@@ -91,6 +107,20 @@ public class UserController {
 
         model.addAttribute("pageTitle", "Pregled Korisnika");
         model.addAttribute("activeMenu", "users");
+        model.addAttribute("pageActions", java.util.List.of(
+                java.util.Map.of(
+                        "url", "/users/" + id + "/edit",
+                        "cssClass", "btn btn-primary btn-sm",
+                        "label", "Uredi",
+                        "id", "btn-edit-user"
+                ),
+                java.util.Map.of(
+                        "url", "/users",
+                        "cssClass", "btn btn-outline-secondary btn-sm",
+                        "label", "Povratak",
+                        "id", "btn-back"
+                )
+        ));
         model.addAttribute("user", userOpt.get());
         
         return "users/view";
@@ -106,6 +136,14 @@ public class UserController {
 
         model.addAttribute("pageTitle", "Uredi Korisnika");
         model.addAttribute("activeMenu", "users");
+        model.addAttribute("pageActions", java.util.List.of(
+                java.util.Map.of(
+                        "url", "/users",
+                        "cssClass", "btn btn-outline-secondary btn-sm",
+                        "label", "Povratak",
+                        "id", "btn-back"
+                )
+        ));
         model.addAttribute("user", userOpt.get());
         model.addAttribute("roles", Role.values());
         

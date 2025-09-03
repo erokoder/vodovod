@@ -61,6 +61,15 @@ public class ReadingsController {
             readings = meterReadingService.getAllReadingsByDateRange(fromDate, toDate);
         }
         model.addAttribute("pageTitle", "Očitanja");
+        model.addAttribute("activeMenu", "readings");
+        model.addAttribute("pageActions", java.util.List.of(
+                java.util.Map.of(
+                        "url", "/readings/new",
+                        "cssClass", "btn btn-primary btn-sm",
+                        "label", "Novo očitanje",
+                        "id", "btn-new-reading"
+                )
+        ));
         model.addAttribute("readings", readings);
         // Add users for filter dropdown (only active water users)
         model.addAttribute("users", userService.getActiveWaterUsers());
@@ -73,6 +82,15 @@ public class ReadingsController {
     @GetMapping("/new")
     public String newReading(Model model) {
         model.addAttribute("pageTitle", "Novo očitanje");
+        model.addAttribute("activeMenu", "readings");
+        model.addAttribute("pageActions", java.util.List.of(
+                java.util.Map.of(
+                        "url", "/readings",
+                        "cssClass", "btn btn-outline-secondary btn-sm",
+                        "label", "Natrag",
+                        "id", "btn-back"
+                )
+        ));
         NewReadingDTO dto = new NewReadingDTO();
         dto.setReadingDate(LocalDate.now());
         model.addAttribute("newReadingDTO", dto);
@@ -146,6 +164,21 @@ public class ReadingsController {
         MeterReading reading = meterReadingService.findById(id)
                 .orElseThrow(() -> new RuntimeException("Očitanje nije pronađeno"));
         model.addAttribute("pageTitle", "Pregled očitanja #" + id);
+        model.addAttribute("activeMenu", "readings");
+        model.addAttribute("pageActions", java.util.List.of(
+                java.util.Map.of(
+                        "url", "/readings",
+                        "cssClass", "btn btn-secondary btn-sm",
+                        "label", "Nazad na listu",
+                        "id", "btn-back"
+                ),
+                java.util.Map.of(
+                        "url", "/users/" + reading.getUser().getId(),
+                        "cssClass", "btn btn-outline-primary btn-sm",
+                        "label", "Korisnik",
+                        "id", "btn-user"
+                )
+        ));
         model.addAttribute("reading", reading);
         return "readings/view";
     }
