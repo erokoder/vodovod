@@ -21,7 +21,7 @@
     </div>
 
     <!-- Filters -->
-    <form class="row g-3 mb-3" method="get" action="/bills">
+    <form class="row g-3 mb-3" method="get" action="/bills" id="filters-form">
         <div class="col-md-4">
             <label for="userId" class="form-label">Korisnik</label>
             <select id="userId" name="userId" class="form-select">
@@ -42,9 +42,6 @@
             <label for="toDate" class="form-label">Datum do</label>
             <input type="date" id="toDate" name="toDate" class="form-control"
                    th:value="${selectedToDate != null ? #temporals.format(selectedToDate, 'yyyy-MM-dd') : ''}">
-        </div>
-        <div class="col-md-2 align-self-end">
-            <button type="submit" class="btn btn-outline-primary"><i class="bi bi-funnel"></i> Filtriraj</button>
         </div>
     </form>
 
@@ -213,6 +210,15 @@
                     .then(() => { window.location.reload(); })
                     .catch(() => { alert('Greška pri spremanju računa.'); });
             });
+
+            // Auto-submit filters on change
+            const form = document.getElementById('filters-form');
+            if (form) {
+                const inputs = form.querySelectorAll('select, input');
+                inputs.forEach(function(el) {
+                    el.addEventListener('change', function() { form.submit(); });
+                });
+            }
         })();
     </script>
 </div>

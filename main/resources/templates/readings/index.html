@@ -24,7 +24,7 @@
     </div>
 
     <!-- Filters -->
-    <form class="row g-3 mb-3" method="get" action="/readings">
+    <form class="row g-3 mb-3" method="get" action="/readings" id="filters-form">
         <div class="col-md-4">
             <label for="userId" class="form-label">Korisnik</label>
             <select id="userId" name="userId" class="form-select">
@@ -43,9 +43,6 @@
         <div class="col-md-3">
             <label for="toDate" class="form-label">Datum do</label>
             <input type="date" id="toDate" name="toDate" class="form-control" th:value="${toDate}">
-        </div>
-        <div class="col-md-2 align-self-end">
-            <button type="submit" class="btn btn-outline-primary"><i class="bi bi-funnel"></i> Filtriraj</button>
         </div>
     </form>
 
@@ -101,15 +98,28 @@
 <div layout:fragment="scripts">
 <script th:inline="none">
 $(document).ready(function() {
-    $('#dataTable').DataTable({
-        "language": {
-            "url": "//cdn.datatables.net/plug-ins/1.10.19/i18n/Croatian.json"
-        },
-        // Default order: by user (now col 0) asc, then by date (now col 1) desc
-        "order": [[ 0, "asc" ], [ 1, "desc" ]],
-        "pageLength": 25,
-        "responsive": true
-    });
+    if ($.fn && $.fn.DataTable) {
+        $('#dataTable').DataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.10.19/i18n/Croatian.json"
+            },
+            // Default order: by user (now col 0) asc, then by date (now col 1) desc
+            "order": [[ 0, "asc" ], [ 1, "desc" ]],
+            "pageLength": 25,
+            "responsive": true
+        });
+    }
+
+    // Auto-submit filters on change (same as bills)
+    (function() {
+        const form = document.getElementById('filters-form');
+        if (form) {
+            const inputs = form.querySelectorAll('select, input');
+            inputs.forEach(function(el) {
+                el.addEventListener('change', function() { form.submit(); });
+            });
+        }
+    })();
 });
 </script>
 </div>
