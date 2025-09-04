@@ -41,7 +41,7 @@ public class PaymentsController {
                         @RequestParam(value = "userId", required = false) Long userId,
                         @RequestParam(value = "startDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
                         @RequestParam(value = "endDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
-        model.addAttribute("pageTitle", "Plaćanja");
+        model.addAttribute("pageTitle", "Uplate");
         model.addAttribute("activeMenu", "payments");
         // Populate users for filter dropdown
         model.addAttribute("users", userService.getActiveWaterUsers());
