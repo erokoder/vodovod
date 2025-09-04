@@ -54,9 +54,15 @@
                     </h6>
                 </div>
                 <div class="card-body">
-                    <p class="text-muted small">
-                        Ovdje možete pregledati svoje podatke. Za izmjene kontaktirajte administratora.
-                    </p>
+                    <div th:if="${currentUserBalance != null}" class="mb-3">
+                        <div class="small text-muted">Vaš saldo</div>
+                        <div class="d-flex align-items-center justify-content-between">
+                            <span th:classappend="${currentUserBalance.status == 'Dužan' ? 'badge bg-warning text-dark' : (currentUserBalance.status == 'Pretplaćen' ? 'badge bg-info' : 'badge bg-success') }"
+                                  th:text="${currentUserBalance.status}">Status</span>
+                            <span class="fw-semibold" th:text="${#numbers.formatDecimal(currentUserBalance.amount, 1, 2)} + ' KM'">0.00 KM</span>
+                        </div>
+                    </div>
+                    <p class="text-muted small">Ovdje možete pregledati svoje podatke. Za izmjene kontaktirajte administratora.</p>
                 </div>
             </div>
         </div>

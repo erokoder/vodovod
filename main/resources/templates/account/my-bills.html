@@ -7,13 +7,23 @@
 </head>
 <body>
 <div layout:fragment="content">
-    <!-- Welcome Message -->
-    <div class="alert alert-info" role="alert">
-        <i class="bi bi-info-circle"></i>
-        Dobrodošli, <strong th:text="${user.fullName}">Ime Prezime</strong>! 
-        <span th:if="${user.meterNumber}">
-            Vaš broj vodomjera je: <strong th:text="${user.meterNumber}">VM001</strong>
-        </span>
+    <!-- Welcome & Saldo -->
+    <div class="alert alert-info d-flex align-items-center justify-content-between" role="alert">
+        <div>
+            <i class="bi bi-info-circle"></i>
+            Dobrodošli, <strong th:text="${user.fullName}">Ime Prezime</strong>! 
+            <span th:if="${user.meterNumber}">
+                Vaš broj vodomjera je: <strong th:text="${user.meterNumber}">VM001</strong>
+            </span>
+        </div>
+        <div th:if="${currentUserBalance != null}" class="ms-3">
+            <span class="small text-muted">Vaš saldo</span>
+            <span class="badge ms-2"
+                  th:classappend="${currentUserBalance.status == 'Dužan' ? 'bg-warning text-dark' : (currentUserBalance.status == 'Pretplaćen' ? 'bg-info' : 'bg-success') }"
+                  th:text="${(currentUserBalance.status == 'Plaćeno sve' ? '0 KM' : currentUserBalance.status + ' ' + #numbers.formatDecimal(currentUserBalance.amount, 1, 2) + ' KM')}">
+                0 KM
+            </span>
+        </div>
     </div>
 
     <!-- No Meter Message -->

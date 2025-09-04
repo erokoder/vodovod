@@ -109,7 +109,7 @@
                     <a class="nav-link dropdown-toggle text-white" href="#" role="button" 
                        data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="bi bi-person-fill"></i>
-                        <span sec:authentication="name">Korisnik</span>
+                        <span th:text="${currentUserFullName != null ? currentUserFullName : 'Korisnik'}">Korisnik</span>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li><a class="dropdown-item" href="/my-account">
