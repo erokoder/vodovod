@@ -101,4 +101,11 @@ public class PaymentsController {
         paymentService.recordPayment(userId, billId, paymentDate, amount, paymentMethod, "system");
         return "redirect:/payments";
     }
+
+    @PostMapping("/{id}/cancel")
+    public String cancelPayment(@PathVariable("id") Long id,
+                                @RequestParam(value = "reason", required = false) String reason) {
+        paymentService.cancelPayment(id, "system", reason);
+        return "redirect:/payments";
+    }
 }

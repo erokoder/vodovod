@@ -73,14 +73,22 @@
                                 <td th:text="${#numbers.formatDecimal(p.amount, 1, 'COMMA', 2, 'POINT')}">-</td>
                                 <td th:text="${p.paymentMethod != null ? p.paymentMethod : '-'}">-</td>
                                 <td>
-                                    <span th:if="${p.bill == null}" class="badge bg-info text-dark">Avans</span>
-                                    <span th:if="${p.bill != null}" class="badge bg-secondary">Za račun</span>
+                                    <span th:if="${p.cancelledAt != null}" class="badge bg-danger">Stornirano</span>
+                                    <span th:if="${p.cancelledAt == null && p.bill == null}" class="badge bg-info text-dark">Avans</span>
+                                    <span th:if="${p.cancelledAt == null && p.bill != null}" class="badge bg-secondary">Za račun</span>
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm" role="group">
                                         <a th:if="${p.bill != null}" th:href="@{/bills/{id}/pdf(id=${p.bill.id})}" class="btn btn-outline-secondary" title="Račun PDF">
                                             <i class="bi bi-filetype-pdf"></i>
                                         </a>
+                                        <form th:if="${p.cancelledAt == null}" th:action="@{/payments/{id}/cancel(id=${p.id})}" method="post" class="d-inline ms-1"
+                                              onsubmit="return confirm('Stornirati uplatu? Ova radnja će ažurirati status računa.');">
+                                            <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                            <button type="submit" class="btn btn-outline-danger" title="Storniraj uplatu">
+                                                <i class="bi bi-x-circle"></i>
+                                            </button>
+                                        </form>
                                     </div>
                                 </td>
                             </tr>

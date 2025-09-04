@@ -23,21 +23,23 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     @Query("SELECT p FROM Payment p WHERE p.paymentDate BETWEEN :startDate AND :endDate ORDER BY p.paymentDate DESC")
     List<Payment> findByPaymentDateBetween(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
     
-    @Query("SELECT SUM(p.amount) FROM Payment p WHERE p.paymentDate BETWEEN :startDate AND :endDate")
+    @Query("SELECT SUM(p.amount) FROM Payment p WHERE p.cancelledAt IS NULL AND p.paymentDate BETWEEN :startDate AND :endDate")
     BigDecimal sumAmountByPaymentDateBetween(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
     
-    @Query("SELECT COUNT(p) FROM Payment p WHERE p.paymentDate BETWEEN :startDate AND :endDate")
+    @Query("SELECT COUNT(p) FROM Payment p WHERE p.cancelledAt IS NULL AND p.paymentDate BETWEEN :startDate AND :endDate")
     long countByPaymentDateBetween(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
     
-    @Query("SELECT SUM(p.amount) FROM Payment p")
+    @Query("SELECT SUM(p.amount) FROM Payment p WHERE p.cancelledAt IS NULL")
     BigDecimal sumTotalAmount();
     
     List<Payment> findByUserAndBillIsNullOrderByPaymentDateAsc(User user);
+
+    List<Payment> findByUserAndBillIsNullAndCancelledAtIsNullOrderByPaymentDateAsc(User user);
     
-    @Query("SELECT COALESCE(SUM(p.amount),0) FROM Payment p WHERE p.user = :user AND p.bill IS NULL")
+    @Query("SELECT COALESCE(SUM(p.amount),0) FROM Payment p WHERE p.cancelledAt IS NULL AND p.user = :user AND p.bill IS NULL")
     BigDecimal sumPrepaymentByUser(@Param("user") User user);
 
     // Flexible search by optional filters: user and payment date range
-    @Query("SELECT p FROM Payment p WHERE (:user IS NULL OR p.user = :user) AND (:startDate IS NULL OR p.paymentDate >= :startDate) AND (:endDate IS NULL OR p.paymentDate <= :endDate) ORDER BY p.paymentDate DESC")
+    @Query("SELECT p FROM Payment p WHERE p.cancelledAt IS NULL AND (:user IS NULL OR p.user = :user) AND (:startDate IS NULL OR p.paymentDate >= :startDate) AND (:endDate IS NULL OR p.paymentDate <= :endDate) ORDER BY p.paymentDate DESC")
     List<Payment> search(@Param("user") User user, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 }

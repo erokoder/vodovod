@@ -46,6 +46,15 @@ public class Payment {
     
     @Column(name = "created_by")
     private String createdBy; // Ko je unio uplatu
+
+    @Column(name = "cancelled_at")
+    private LocalDateTime cancelledAt;
+
+    @Column(name = "cancelled_by")
+    private String cancelledBy;
+
+    @Column(name = "cancellation_reason")
+    private String cancellationReason;
     
     @PrePersist
     protected void onCreate() {
@@ -143,8 +152,36 @@ public class Payment {
         this.createdBy = createdBy;
     }
     
+    public LocalDateTime getCancelledAt() {
+        return cancelledAt;
+    }
+
+    public void setCancelledAt(LocalDateTime cancelledAt) {
+        this.cancelledAt = cancelledAt;
+    }
+
+    public String getCancelledBy() {
+        return cancelledBy;
+    }
+
+    public void setCancelledBy(String cancelledBy) {
+        this.cancelledBy = cancelledBy;
+    }
+
+    public String getCancellationReason() {
+        return cancellationReason;
+    }
+
+    public void setCancellationReason(String cancellationReason) {
+        this.cancellationReason = cancellationReason;
+    }
+    
     // Utility
     public boolean isPrepayment() {
         return this.bill == null;
+    }
+
+    public boolean isCancelled() {
+        return this.cancelledAt != null;
     }
 }
