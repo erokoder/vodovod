@@ -25,7 +25,9 @@ public class MeterReadingService {
      */
     public MeterReading saveReading(MeterReading reading) {
         // Pronađi prethodno očitanje za korisnika (ignoriši stornirana)
-        Optional<MeterReading> previousReading = meterReadingRepository.findTopActiveByUserOrderByReadingDateDesc(reading.getUser());
+        Optional<MeterReading> previousReading = meterReadingRepository
+                .findByUserOrderByReadingDateDescending(reading.getUser())
+                .stream().findFirst();
         
         if (previousReading.isPresent()) {
             reading.setPreviousReadingValue(previousReading.get().getReadingValue());
@@ -43,7 +45,9 @@ public class MeterReadingService {
      * Dohvaća najnovije očitanje za korisnika
      */
     public Optional<MeterReading> getLatestReadingByUser(User user) {
-        return meterReadingRepository.findTopActiveByUserOrderByReadingDateDesc(user);
+        return meterReadingRepository
+                .findByUserOrderByReadingDateDescending(user)
+                .stream().findFirst();
     }
 
     /**
