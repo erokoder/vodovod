@@ -24,8 +24,8 @@ public class MeterReadingService {
      * Sprema novo očitanje vodomjera
      */
     public MeterReading saveReading(MeterReading reading) {
-        // Pronađi prethodno očitanje za korisnika
-        Optional<MeterReading> previousReading = getLatestReadingByUser(reading.getUser());
+        // Pronađi prethodno očitanje za korisnika (ignoriši stornirana)
+        Optional<MeterReading> previousReading = meterReadingRepository.findTopByUserAndCancelledFalseOrderByReadingDateDesc(reading.getUser());
         
         if (previousReading.isPresent()) {
             reading.setPreviousReadingValue(previousReading.get().getReadingValue());
@@ -43,7 +43,7 @@ public class MeterReadingService {
      * Dohvaća najnovije očitanje za korisnika
      */
     public Optional<MeterReading> getLatestReadingByUser(User user) {
-        return meterReadingRepository.findTopByUserOrderByReadingDateDesc(user);
+        return meterReadingRepository.findTopByUserAndCancelledFalseOrderByReadingDateDesc(user);
     }
 
     /**
@@ -136,6 +136,39 @@ public class MeterReadingService {
             return meterReadingRepository.findByUserAndReadingDateLessThanEqualOrderByReadingDateDesc(user, toDate);
         } else {
             return getReadingsByUser(user);
+        }
+    }
+
+    /**
+     * Stornira očitanje: označi kao cancelled i ažurira potrošnje narednih očitanja korisnika.
+     * Ako je očitanje već bilo uporabljeno za račun (billGenerated=true), baca izuzetak.
+     */
+    public void cancelReading(Long readingId) {
+        MeterReading reading = meterReadingRepository.findById(readingId)
+                .orElseThrow(() -> new IllegalArgumentException("Očitanje nije pronađeno"));
+        if (reading.isBillGenerated()) {
+            throw new IllegalStateException("Ovo očitanje je već iskorišteno za račun i ne može se stornirati.");
+        }
+        if (reading.isCancelled()) {
+            return; // idempotentno
+        }
+
+        // Označi kao stornirano
+        reading.setCancelled(true);
+        meterReadingRepository.save(reading);
+
+        // Re-kalkulacija: prolaz kroz sva očitanja korisnika po rastućem datumu koja nisu stornirana
+        List<MeterReading> allByUserAsc = meterReadingRepository.findByUserOrderByReadingDateAsc(reading.getUser());
+        BigDecimal lastEffectiveValue = BigDecimal.ZERO;
+        for (MeterReading r : allByUserAsc) {
+            if (r.isCancelled()) {
+                continue;
+            }
+            // previous je posljenji effective value prije ovog
+            r.setPreviousReadingValue(lastEffectiveValue);
+            r.calculateConsumption();
+            meterReadingRepository.save(r);
+            lastEffectiveValue = r.getReadingValue();
         }
     }
 }

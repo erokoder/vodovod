@@ -15,19 +15,23 @@ public interface MeterReadingRepository extends JpaRepository<MeterReading, Long
     
     List<MeterReading> findByUserOrderByReadingDateDesc(User user);
     
-    @Query("SELECT mr FROM MeterReading mr WHERE mr.user = :user ORDER BY mr.readingDate DESC")
+    @Query("SELECT mr FROM MeterReading mr WHERE mr.user = :user AND mr.cancelled = false ORDER BY mr.readingDate DESC")
     List<MeterReading> findByUserOrderByReadingDateDescending(User user);
     
     Optional<MeterReading> findTopByUserOrderByReadingDateDesc(User user);
+    Optional<MeterReading> findTopByUserAndCancelledFalseOrderByReadingDateDesc(User user);
     
-    @Query("SELECT mr FROM MeterReading mr WHERE mr.user = :user AND mr.readingDate = :readingDate")
+    @Query("SELECT mr FROM MeterReading mr WHERE mr.user = :user AND mr.readingDate = :readingDate AND mr.cancelled = false")
     Optional<MeterReading> findByUserAndReadingDate(User user, LocalDate readingDate);
     
-    @Query("SELECT mr FROM MeterReading mr WHERE mr.billGenerated = false")
+    @Query("SELECT mr FROM MeterReading mr WHERE mr.billGenerated = false AND mr.cancelled = false")
     List<MeterReading> findReadingsWithoutBill();
     
-    @Query("SELECT mr FROM MeterReading mr WHERE mr.user = :user AND mr.billGenerated = false ORDER BY mr.readingDate ASC")
+    @Query("SELECT mr FROM MeterReading mr WHERE mr.user = :user AND mr.billGenerated = false AND mr.cancelled = false ORDER BY mr.readingDate ASC")
     List<MeterReading> findUnbilledReadingsByUser(User user);
+    
+    // Ascending order per user (used for recalculation after cancellation)
+    List<MeterReading> findByUserOrderByReadingDateAsc(User user);
     
     @Query("SELECT COUNT(mr) FROM MeterReading mr WHERE mr.readingDate BETWEEN :startDate AND :endDate")
     long countByReadingDateBetween(LocalDate startDate, LocalDate endDate);
