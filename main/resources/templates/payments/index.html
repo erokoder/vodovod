@@ -71,7 +71,7 @@
                                 <td th:text="${p.user != null ? p.user.fullName : '-'}">-</td>
                                 <td th:text="${p.paymentDate}">-</td>
                                 <td th:text="${#numbers.formatDecimal(p.amount, 1, 'COMMA', 2, 'POINT')}">-</td>
-                                <td th:text="${p.paymentMethod != null ? p.paymentMethod : '-'}">-</td>
+                                <td th:text="${p.paymentMethod != null} ? #{paymentMethod.${p.paymentMethod}} : '-'">-</td>
                                 <td>
                                     <span th:if="${p.bill == null}" class="badge bg-info text-dark">Avans</span>
                                     <span th:if="${p.bill != null}" class="badge bg-secondary">Za račun</span>
