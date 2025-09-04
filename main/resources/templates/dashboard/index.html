@@ -188,6 +188,7 @@
                                     <th>Broj vodomjera</th>
                                     <th class="text-end">Iznos</th>
                                     <th>Status</th>
+                                    <th class="text-end">Napomena</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -199,6 +200,11 @@
                                     <td class="text-end" th:text="${#numbers.formatDecimal(ub.amount, 1, 2)} + ' KM'">0.00 KM</td>
                                     <td>
                                         <span th:classappend="${ub.status == 'Dužan' ? 'badge bg-warning text-dark' : (ub.status == 'Pretplaćen' ? 'badge bg-info' : 'badge bg-success') }" th:text="${ub.status}">Status</span>
+                                    </td>
+                                    <td class="text-end">
+                                        <span th:if="${ub.status == 'Pretplaćen'}" class="text-info">Pretplata</span>
+                                        <span th:if="${ub.status == 'Dužan'}" class="text-warning">Dug</span>
+                                        <span th:if="${ub.status == 'Plaćeno sve'}" class="text-success">0 KM</span>
                                     </td>
                                 </tr>
                                 <tr th:if="${#lists.isEmpty(stats.userBalances)}">

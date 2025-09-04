@@ -69,18 +69,24 @@ public class DashboardService {
         userRepository.findByRoleAndEnabledTrue(Role.USER).forEach(user -> {
             BigDecimal totalByUser = billRepository.sumTotalAmountByUser(user);
             BigDecimal paidByUser = billRepository.sumPaidAmountByUser(user);
-            BigDecimal balance = (totalByUser != null ? totalByUser : BigDecimal.ZERO)
-                    .subtract(paidByUser != null ? paidByUser : BigDecimal.ZERO);
+            BigDecimal prepayments = paymentRepository.sumPrepaymentByUser(user);
+
+            BigDecimal invoicesTotal = totalByUser != null ? totalByUser : BigDecimal.ZERO;
+            BigDecimal invoicesPaid = paidByUser != null ? paidByUser : BigDecimal.ZERO;
+            BigDecimal credit = prepayments != null ? prepayments : BigDecimal.ZERO;
+
+            // Positive -> duguje; Negative -> pretplata
+            BigDecimal netBalance = invoicesTotal.subtract(invoicesPaid).subtract(credit);
 
             String status;
             BigDecimal displayAmount;
-            int cmp = balance.compareTo(BigDecimal.ZERO);
+            int cmp = netBalance.compareTo(BigDecimal.ZERO);
             if (cmp > 0) {
                 status = "Dužan";
-                displayAmount = balance;
+                displayAmount = netBalance;
             } else if (cmp < 0) {
                 status = "Pretplaćen";
-                displayAmount = balance.abs();
+                displayAmount = netBalance.abs();
             } else {
                 status = "Plaćeno sve";
                 displayAmount = BigDecimal.ZERO;
