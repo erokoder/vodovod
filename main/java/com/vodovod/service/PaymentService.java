@@ -52,24 +52,23 @@ public class PaymentService {
                 remainingToAllocate = remainingToAllocate.subtract(allocateToBill);
             }
         } else {
-            // Ako je odabrano plaćanje unaprijed (billId == null), automatski raspodijeli na najstarije otvorene račune
+            // Plaćanje bez specificiranog računa: ako postoji otvoreni račun, primijeni SAMO na najstariji;
+            // preostali iznos (ako postoji) vodi se kao pretplata.
             List<Bill> openBills = billRepository.findOpenBillsByUser(user);
-            for (Bill openBill : openBills) {
-                if (remainingToAllocate.signum() <= 0) {
-                    break;
-                }
-                BigDecimal remainingOnBill = openBill.getTotalAmount().subtract(openBill.getPaidAmount());
+            if (!openBills.isEmpty() && remainingToAllocate.signum() > 0) {
+                Bill oldestOpen = openBills.get(0);
+                BigDecimal remainingOnBill = oldestOpen.getTotalAmount().subtract(oldestOpen.getPaidAmount());
                 BigDecimal allocateToBill = remainingToAllocate.min(remainingOnBill);
                 if (allocateToBill.signum() > 0) {
-                    Payment applied = new Payment(openBill, paymentDate, allocateToBill);
+                    Payment applied = new Payment(oldestOpen, paymentDate, allocateToBill);
                     applied.setUser(user);
                     applied.setPaymentMethod(paymentMethod);
                     applied.setCreatedBy(createdBy);
                     paymentRepository.save(applied);
 
-                    openBill.setPaidAmount(openBill.getPaidAmount().add(allocateToBill));
-                    openBill.updateStatus();
-                    billRepository.save(openBill);
+                    oldestOpen.setPaidAmount(oldestOpen.getPaidAmount().add(allocateToBill));
+                    oldestOpen.updateStatus();
+                    billRepository.save(oldestOpen);
 
                     remainingToAllocate = remainingToAllocate.subtract(allocateToBill);
                 }
