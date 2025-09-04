@@ -203,16 +203,20 @@ public class ReadingsController {
             
             // Ako nije validno, vrati poruku zašto
             if (!isValid) {
-                Optional<MeterReading> latestReading = meterReadingService.getLatestReadingByUser(user);
-                if (latestReading.isPresent()) {
-                    if (newReading.compareTo(latestReading.get().getReadingValue()) <= 0) {
-                        response.put("message", "Novo očitanje mora biti veće od prethodnog (" + latestReading.get().getReadingValue() + " m³)");
-                    } else if (!readingDate.isAfter(latestReading.get().getReadingDate())) {
-                        response.put("message", "Datum očitanja mora biti noviji od prethodnog (" + latestReading.get().getReadingDate() + ")");
-                    }
-                }
-                if (meterReadingService.existsReadingForUserAndDate(user, readingDate)) {
+                // Budući datum
+                if (readingDate.isAfter(java.time.LocalDate.now())) {
+                    response.put("message", "Datum očitanja ne može biti u budućnosti");
+                } else if (meterReadingService.existsReadingForUserAndDate(user, readingDate)) {
                     response.put("message", "Već postoji očitanje za ovaj datum");
+                } else {
+                    Optional<MeterReading> latestReading = meterReadingService.getLatestReadingByUser(user);
+                    if (latestReading.isPresent()) {
+                        if (newReading.compareTo(latestReading.get().getReadingValue()) <= 0) {
+                            response.put("message", "Novo očitanje mora biti veće od prethodnog (" + latestReading.get().getReadingValue() + " m³)");
+                        } else if (!readingDate.isAfter(latestReading.get().getReadingDate())) {
+                            response.put("message", "Datum očitanja mora biti noviji od prethodnog (" + latestReading.get().getReadingDate() + ")");
+                        }
+                    }
                 }
             } else {
                 // Ako je validno, provjeri odstupanje potrošnje > 20% i postavi upozorenje

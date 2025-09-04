@@ -89,8 +89,9 @@ $(document).ready(function() {
     var $form = $('#newReadingForm');
     var pendingWarn = null;
 
-    // Set today's date as default
-    $readingDate.val(new Date().toISOString().split('T')[0]);
+    // Set today's date as default and bound selection to today as max
+    var todayStr = new Date().toISOString().split('T')[0];
+    $readingDate.attr('max', todayStr).val(todayStr);
 
     // When user is selected, load previous reading
     $userSelect.on('change', function() {
@@ -128,9 +129,23 @@ $(document).ready(function() {
                 if (data.hasReading) {
                     $previousReading.val(data.previousReading);
                     $lastReadingInfo.text('Poslednje očitanje: ' + data.lastReadingDate);
+                    // Set minimum selectable date to last reading date
+                    $readingDate.attr('min', data.lastReadingDate);
+                    // Ensure current value falls within [lastReadingDate, today]
+                    var currentVal = $readingDate.val();
+                    if (currentVal < data.lastReadingDate) {
+                        $readingDate.val(data.lastReadingDate);
+                    } else if (currentVal > todayStr) {
+                        $readingDate.val(todayStr);
+                    }
                 } else {
                     $previousReading.val('0.000');
                     $lastReadingInfo.text('Nema prethodnih očitanja');
+                    // No previous reading: allow any date up to today
+                    $readingDate.removeAttr('min');
+                    if ($readingDate.val() > todayStr) {
+                        $readingDate.val(todayStr);
+                    }
                 }
                 calculateConsumption();
                 validateReading();

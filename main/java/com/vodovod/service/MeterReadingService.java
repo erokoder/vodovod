@@ -64,6 +64,10 @@ public class MeterReadingService {
      * Validira novo očitanje
      */
     public boolean isValidNewReading(User user, BigDecimal newReading, LocalDate readingDate) {
+        // Ne dopuštaj budući datum
+        if (readingDate.isAfter(LocalDate.now())) {
+            return false;
+        }
         // Provjeri postoji li već očitanje za taj datum
         if (existsReadingForUserAndDate(user, readingDate)) {
             return false;
