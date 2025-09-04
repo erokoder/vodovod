@@ -109,12 +109,6 @@
                     <a class="nav-link dropdown-toggle text-white" href="#" role="button" 
                        data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="bi bi-person-fill"></i>
-                        <span th:if="${currentUserBalance != null}"
-                              class="badge ms-2"
-                              th:classappend="${currentUserBalance.status == 'Dužan' ? 'bg-warning text-dark' : (currentUserBalance.status == 'Pretplaćen' ? 'bg-info' : 'bg-success') }"
-                              th:text="${(currentUserBalance.status == 'Plaćeno sve' ? '0 KM' : currentUserBalance.status + ' ' + #numbers.formatDecimal(currentUserBalance.amount, 1, 2) + ' KM')}">
-                            0 KM
-                        </span>
                         <span th:text="${currentUserFullName != null ? currentUserFullName : 'Korisnik'}">Korisnik</span>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
