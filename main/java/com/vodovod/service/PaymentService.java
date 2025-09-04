@@ -103,13 +103,21 @@ public class PaymentService {
         Bill bill = payment.getBill();
         if (bill != null) {
             // Vrati iznos na računu
-            BigDecimal newPaid = bill.getPaidAmount().subtract(payment.getAmount());
+            BigDecimal cancelledAmount = payment.getAmount();
+            BigDecimal newPaid = bill.getPaidAmount().subtract(cancelledAmount);
             if (newPaid.signum() < 0) {
                 newPaid = BigDecimal.ZERO;
             }
             bill.setPaidAmount(newPaid);
             bill.updateStatus();
             billRepository.save(bill);
+
+            // Ako postoji pretplata (avans), automatski primijeni do iznosa stornirane uplate
+            BigDecimal remainingOnBill = bill.getTotalAmount().subtract(bill.getPaidAmount());
+            if (remainingOnBill.signum() > 0) {
+                BigDecimal cap = cancelledAmount.min(remainingOnBill);
+                applyPrepaymentsToBillUpTo(bill, cap, cancelledBy);
+            }
         }
     }
 
@@ -146,6 +154,53 @@ public class PaymentService {
         }
 
         // Apply as payment to the bill
+        Payment applied = new Payment(bill, LocalDate.now(), toApply);
+        applied.setUser(user);
+        applied.setPaymentMethod("PREPAYMENT");
+        applied.setCreatedBy(createdBy);
+        paymentRepository.save(applied);
+
+        bill.setPaidAmount(bill.getPaidAmount().add(toApply));
+        bill.updateStatus();
+        billRepository.save(bill);
+
+        return toApply;
+    }
+
+    @Transactional
+    public BigDecimal applyPrepaymentsToBillUpTo(Bill bill, BigDecimal maxAmount, String createdBy) {
+        if (maxAmount == null || maxAmount.signum() <= 0) {
+            return BigDecimal.ZERO;
+        }
+        User user = bill.getUser();
+        BigDecimal remainingOnBill = bill.getTotalAmount().subtract(bill.getPaidAmount());
+        if (remainingOnBill.signum() <= 0) {
+            return BigDecimal.ZERO;
+        }
+        BigDecimal availableCredit = paymentRepository.sumPrepaymentByUser(user);
+        if (availableCredit == null || availableCredit.signum() <= 0) {
+            return BigDecimal.ZERO;
+        }
+        BigDecimal toApply = availableCredit.min(remainingOnBill).min(maxAmount);
+        if (toApply.signum() <= 0) {
+            return BigDecimal.ZERO;
+        }
+
+        BigDecimal remainingToConsume = toApply;
+        List<Payment> prepayments = paymentRepository.findByUserAndBillIsNullAndCancelledAtIsNullOrderByPaymentDateAsc(user);
+        for (Payment p : prepayments) {
+            if (remainingToConsume.signum() <= 0) break;
+            BigDecimal take = p.getAmount().min(remainingToConsume);
+            BigDecimal newAmount = p.getAmount().subtract(take);
+            if (newAmount.signum() == 0) {
+                paymentRepository.delete(p);
+            } else {
+                p.setAmount(newAmount);
+                paymentRepository.save(p);
+            }
+            remainingToConsume = remainingToConsume.subtract(take);
+        }
+
         Payment applied = new Payment(bill, LocalDate.now(), toApply);
         applied.setUser(user);
         applied.setPaymentMethod("PREPAYMENT");
