@@ -38,6 +38,9 @@
                             <div th:if="${#fields.hasErrors('readingDate')}" class="text-danger">
                                 <small th:errors="*{readingDate}"></small>
                             </div>
+                            <div id="dateValidationMessage" class="text-danger" style="display: none;">
+                                <small></small>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label for="previousReading">Prethodno stanje (m³)</label>
@@ -88,10 +91,14 @@ $(document).ready(function() {
     var $submitBtn = $('#submitBtn');
     var $form = $('#newReadingForm');
     var pendingWarn = null;
+    var hasLatestReading = false;
+    var lastReadingDateStr = null;
+    var dateHasError = false;
 
     // Set today's date as default and bound selection to today as max
     var todayStr = new Date().toISOString().split('T')[0];
     $readingDate.attr('max', todayStr).val(todayStr);
+    validateDate();
 
     // When user is selected, load previous reading
     $userSelect.on('change', function() {
@@ -103,10 +110,20 @@ $(document).ready(function() {
         }
     });
 
-    // When current reading or date changes, validate and calculate consumption
-    $currentReading.add($readingDate).on('input change', function() {
+    // When current reading changes, validate reading and recalc consumption
+    $currentReading.on('input change', function() {
         calculateConsumption();
-        validateReading();
+        if (!dateHasError) {
+            validateReading();
+        }
+    });
+
+    // When date changes, validate date first, then reading if date is valid
+    $readingDate.on('input change', function() {
+        validateDate();
+        if (!dateHasError) {
+            validateReading();
+        }
     });
 
     // Intercept submit to show warning confirmation if needed
@@ -126,19 +143,22 @@ $(document).ready(function() {
             url: '/readings/api/user/' + userId + '/latest-reading',
             type: 'GET',
             success: function(data) {
-                if (data.hasReading) {
+                hasLatestReading = !!data.hasReading;
+                if (hasLatestReading) {
+                    lastReadingDateStr = data.lastReadingDate;
                     $previousReading.val(data.previousReading);
                     $lastReadingInfo.text('Poslednje očitanje: ' + data.lastReadingDate);
                     // Set minimum selectable date to last reading date
-                    $readingDate.attr('min', data.lastReadingDate);
+                    $readingDate.attr('min', lastReadingDateStr);
                     // Ensure current value falls within [lastReadingDate, today]
                     var currentVal = $readingDate.val();
-                    if (currentVal < data.lastReadingDate) {
-                        $readingDate.val(data.lastReadingDate);
+                    if (currentVal < lastReadingDateStr) {
+                        $readingDate.val(lastReadingDateStr);
                     } else if (currentVal > todayStr) {
                         $readingDate.val(todayStr);
                     }
                 } else {
+                    lastReadingDateStr = null;
                     $previousReading.val('0.000');
                     $lastReadingInfo.text('Nema prethodnih očitanja');
                     // No previous reading: allow any date up to today
@@ -148,7 +168,10 @@ $(document).ready(function() {
                     }
                 }
                 calculateConsumption();
-                validateReading();
+                validateDate();
+                if (!dateHasError) {
+                    validateReading();
+                }
             },
             error: function(xhr) {
                 console.error('Error loading previous reading:', xhr.responseText);
@@ -184,7 +207,8 @@ $(document).ready(function() {
 
         if (!userId || !currentReading || !readingDate) {
             $validationMessage.hide();
-            $submitBtn.prop('disabled', false);
+            // Only enable submit if there is no date error
+            $submitBtn.prop('disabled', dateHasError);
             return;
         }
 
@@ -201,7 +225,7 @@ $(document).ready(function() {
                 pendingWarn = null;
                 if (data.valid) {
                     $validationMessage.hide();
-                    $submitBtn.prop('disabled', false);
+                    $submitBtn.prop('disabled', dateHasError ? true : false);
                     $currentReading.removeClass('is-invalid').addClass('is-valid');
                     if (data.warn && data.warningMessage) {
                         pendingWarn = data.warningMessage;
@@ -226,6 +250,39 @@ $(document).ready(function() {
     // Initialize if user is already selected (in case of form errors)
     if ($userSelect.val()) {
         loadPreviousReading($userSelect.val());
+    }
+
+    function validateDate() {
+        var dateVal = $readingDate.val();
+        var error = null;
+        dateHasError = false;
+        if (!dateVal) {
+            $('#dateValidationMessage').hide();
+            $readingDate.removeClass('is-invalid');
+            return true;
+        }
+        if (dateVal > todayStr) {
+            error = 'Datum očitanja ne može biti u budućnosti';
+        } else if (hasLatestReading && lastReadingDateStr && dateVal < lastReadingDateStr) {
+            error = 'Datum očitanja ne smije biti stariji od prethodnog (' + lastReadingDateStr + ')';
+        } else if (hasLatestReading && lastReadingDateStr && dateVal === lastReadingDateStr) {
+            // Helpful hint when user selects the same date as the last reading
+            error = 'Već postoji očitanje za odabrani datum (' + lastReadingDateStr + ')';
+        }
+
+        if (error) {
+            dateHasError = true;
+            $('#dateValidationMessage').find('small').text(error);
+            $('#dateValidationMessage').show();
+            $readingDate.addClass('is-invalid');
+            $submitBtn.prop('disabled', true);
+            return false;
+        } else {
+            $('#dateValidationMessage').hide();
+            $readingDate.removeClass('is-invalid');
+            // Do not force enable here; let reading validation decide
+            return true;
+        }
     }
 });
 </script>
