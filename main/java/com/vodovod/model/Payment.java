@@ -21,7 +21,7 @@ public class Payment {
     private User user;
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "bill_id")
+    @JoinColumn(name = "bill_id", nullable = true)
     private Bill bill;
     
     @NotNull(message = "Datum uplate je obavezan")
