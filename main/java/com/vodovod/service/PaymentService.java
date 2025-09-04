@@ -12,7 +12,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class PaymentService {
@@ -85,6 +87,33 @@ public class PaymentService {
     }
 
     @Transactional
+    public void cancelPayment(Long paymentId, String cancelledBy, String reason) {
+        Payment payment = paymentRepository.findById(paymentId)
+                .orElseThrow(() -> new RuntimeException("Uplata nije pronađena"));
+
+        if (payment.getCancelledAt() != null) {
+            return; // već stornirano
+        }
+
+        payment.setCancelledAt(LocalDateTime.now());
+        payment.setCancelledBy(cancelledBy);
+        payment.setCancellationReason(reason);
+        paymentRepository.save(payment);
+
+        Bill bill = payment.getBill();
+        if (bill != null) {
+            // Vrati iznos na računu
+            BigDecimal newPaid = bill.getPaidAmount().subtract(payment.getAmount());
+            if (newPaid.signum() < 0) {
+                newPaid = BigDecimal.ZERO;
+            }
+            bill.setPaidAmount(newPaid);
+            bill.updateStatus();
+            billRepository.save(bill);
+        }
+    }
+
+    @Transactional
     public BigDecimal applyPrepaymentsToBill(Bill bill, String createdBy) {
         User user = bill.getUser();
         BigDecimal remainingOnBill = bill.getTotalAmount().subtract(bill.getPaidAmount());
@@ -102,7 +131,7 @@ public class PaymentService {
 
         // Consume prepayments FIFO by reducing their amounts
         BigDecimal remainingToConsume = toApply;
-        List<Payment> prepayments = paymentRepository.findByUserAndBillIsNullOrderByPaymentDateAsc(user);
+        List<Payment> prepayments = paymentRepository.findByUserAndBillIsNullAndCancelledAtIsNullOrderByPaymentDateAsc(user);
         for (Payment p : prepayments) {
             if (remainingToConsume.signum() <= 0) break;
             BigDecimal take = p.getAmount().min(remainingToConsume);

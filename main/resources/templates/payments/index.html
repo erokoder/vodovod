@@ -73,14 +73,22 @@
                                 <td th:text="${#numbers.formatDecimal(p.amount, 1, 'COMMA', 2, 'POINT')}">-</td>
                                 <td th:text="${p.paymentMethod != null ? p.paymentMethod : '-'}">-</td>
                                 <td>
-                                    <span th:if="${p.bill == null}" class="badge bg-info text-dark">Avans</span>
-                                    <span th:if="${p.bill != null}" class="badge bg-secondary">Za račun</span>
+                                    <span th:if="${p.cancelledAt != null}" class="badge bg-danger">Stornirano</span>
+                                    <span th:if="${p.cancelledAt == null && p.bill == null}" class="badge bg-info text-dark">Avans</span>
+                                    <span th:if="${p.cancelledAt == null && p.bill != null}" class="badge bg-secondary">Za račun</span>
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm" role="group">
                                         <a th:if="${p.bill != null}" th:href="@{/bills/{id}/pdf(id=${p.bill.id})}" class="btn btn-outline-secondary" title="Račun PDF">
                                             <i class="bi bi-filetype-pdf"></i>
                                         </a>
+                                        <form th:if="${p.cancelledAt == null}" th:action="@{/payments/{id}/cancel(id=${p.id})}" method="post" class="d-inline ms-1 cancel-form"
+                                              onsubmit="return false;" data-payment-id="[[${p.id}]]">
+                                            <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                            <button type="button" class="btn btn-outline-danger btn-cancel-payment" title="Storniraj uplatu">
+                                                <i class="bi bi-x-circle"></i>
+                                            </button>
+                                        </form>
                                     </div>
                                 </td>
                             </tr>
@@ -115,6 +123,33 @@
                         el.addEventListener('change', function() { form.submit(); });
                     });
                 }
+            })();
+
+            // AJAX cancel payment to update row immediately and trigger dashboard refresh
+            (function() {
+                $(document).on('click', '.btn-cancel-payment', function() {
+                    if (!confirm('Stornirati uplatu? Ova radnja će ažurirati status računa.')) return;
+                    const btn = $(this);
+                    const form = btn.closest('form.cancel-form');
+                    const action = form.attr('action');
+                    $.ajax({
+                        url: action,
+                        method: 'POST',
+                        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+                        success: function() {
+                            // Update status badge in row
+                            const row = btn.closest('tr');
+                            row.find('td:nth-child(6)').html('<span class="badge bg-danger">Stornirano</span>');
+                            // Disable action buttons
+                            form.remove();
+                            // Notify other tabs to refresh dashboard/bills
+                            try { localStorage.setItem('payments:cancelled', String(Date.now())); } catch (e) {}
+                        },
+                        error: function() {
+                            alert('Greška pri storniranju uplate.');
+                        }
+                    });
+                });
             })();
         });
     </script>

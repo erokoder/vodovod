@@ -36,9 +36,34 @@ public class SchemaMigrationRunner implements ApplicationRunner {
                     log.info("Schema updated: PAYMENTS.BILL_ID is now NULLABLE.");
                 }
             }
+
+            // Add cancellation columns to PAYMENTS if missing
+            addColumnIfMissing("PAYMENTS", "CANCELLED_AT", "TIMESTAMP");
+            addColumnIfMissing("PAYMENTS", "CANCELLED_BY", "VARCHAR(255)");
+            addColumnIfMissing("PAYMENTS", "CANCELLATION_REASON", "VARCHAR(1024)");
         } catch (Exception e) {
             // Non-fatal: log and continue; this is a best-effort fix for existing databases
             log.warn("Schema migration check failed (will continue): {}", e.getMessage());
+        }
+    }
+
+    private void addColumnIfMissing(String tableName, String columnName, String columnType) {
+        try {
+            List<String> exists = jdbcTemplate.query(
+                    "SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE UPPER(TABLE_NAME) = ? AND UPPER(COLUMN_NAME) = ?",
+                    ps -> {
+                        ps.setString(1, tableName.toUpperCase());
+                        ps.setString(2, columnName.toUpperCase());
+                    },
+                    (rs, rowNum) -> rs.getString(1)
+            );
+            if (exists.isEmpty()) {
+                log.info("Adding column {}.{} {} ...", tableName, columnName, columnType);
+                jdbcTemplate.execute("ALTER TABLE " + tableName + " ADD COLUMN " + columnName + " " + columnType);
+                log.info("Added column {}.{}", tableName, columnName);
+            }
+        } catch (Exception e) {
+            log.warn("Could not add column {}.{}: {}", tableName, columnName, e.getMessage());
         }
     }
 }
