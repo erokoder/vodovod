@@ -91,7 +91,7 @@
                                           th:action="@{/users/{id}/delete(id=${user.id})}" method="post" class="d-inline me-1"
                                           onsubmit="return confirm('Jeste li sigurni da želite onemogućiti ovog korisnika?')">
                                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                                        <button type="submit" class="btn btn-sm btn-danger" title="Onemogući">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm" title="Onemogući">
                                             <i class="bi bi-x-circle"></i>
                                         </button>
                                     </form>

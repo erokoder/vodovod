@@ -80,8 +80,8 @@
                                         <span th:if="${!reading.cancelled and !reading.billGenerated}" class="badge bg-info text-dark">Aktivno</span>
                                     </td>
                                     <td class="text-center">
-                                        <a th:href="@{/readings/{id}(id=${reading.id})}" class="btn btn-info btn-sm" title="Pregled detalja">
-                                            <i class="bi bi-eye"></i> Pregled
+                                        <a th:href="@{/readings/{id}(id=${reading.id})}" class="btn btn-sm btn-outline-info me-1" title="Pregled detalja">
+                                            <i class="bi bi-eye"></i>
                                         </a>
                                         <form th:if="${!reading.billGenerated and !reading.cancelled}"
                                               th:action="@{/readings/{id}/cancel(id=${reading.id})}"
@@ -89,7 +89,7 @@
                                               onsubmit="return confirm('Jeste li sigurni da želite stornirati ovo očitanje?');">
                                             <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                                             <button type="submit" class="btn btn-outline-danger btn-sm" title="Storniraj očitanje">
-                                                <i class="bi bi-x-circle"></i> Storniraj
+                                                <i class="bi bi-x-circle"></i>
                                             </button>
                                         </form>
                                     </td>
