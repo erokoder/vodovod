@@ -39,7 +39,7 @@ public class MeterReading {
     private boolean billGenerated = false; // Da li je generiran račun za ovo očitanje
 
     @Column(name = "cancelled")
-    private boolean cancelled = false; // Da li je očitanje stornirano (ne koristi se u izračunima)
+    private Boolean cancelled = Boolean.FALSE; // Da li je očitanje stornirano (ne koristi se u izračunima)
     
     private String notes; // Napomene
     
@@ -121,7 +121,7 @@ public class MeterReading {
     }
 
     public boolean isCancelled() {
-        return cancelled;
+        return Boolean.TRUE.equals(cancelled);
     }
 
     public void setCancelled(boolean cancelled) {
