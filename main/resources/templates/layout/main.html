@@ -269,6 +269,21 @@
       })();
     </script>
     <script>
+      // Simple cross-tab reload trigger using localStorage
+      (function() {
+        window.addEventListener('storage', function(e) {
+          if (e.key === 'payments:cancelled' && e.newValue) {
+            try { localStorage.removeItem('payments:cancelled'); } catch (err) {}
+            // If on dashboard or bills pages, reload to reflect new stats/status
+            var path = window.location.pathname;
+            if (path === '/dashboard' || path.startsWith('/bills') || path === '/my-bills') {
+              window.location.reload();
+            }
+          }
+        });
+      })();
+    </script>
+    <script>
       // Initialize modern datepickers on all native date inputs
       (function() {
         document.addEventListener('DOMContentLoaded', function() {

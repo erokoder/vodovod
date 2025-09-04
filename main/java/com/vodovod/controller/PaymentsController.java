@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -99,6 +101,29 @@ public class PaymentsController {
                                  @RequestParam("amount") BigDecimal amount,
                                  @RequestParam("paymentMethod") String paymentMethod) {
         paymentService.recordPayment(userId, billId, paymentDate, amount, paymentMethod, "system");
+        return "redirect:/payments";
+    }
+
+    @PostMapping("/{id}/cancel")
+    public Object cancelPayment(@PathVariable("id") Long id,
+                                @RequestParam(value = "reason", required = false) String reason,
+                                HttpServletRequest request,
+                                RedirectAttributes redirectAttributes) {
+        paymentService.cancelPayment(id, "system", reason);
+
+        String requestedWith = request.getHeader("X-Requested-With");
+        String accept = request.getHeader("Accept");
+        boolean wantsJson = (requestedWith != null && requestedWith.equalsIgnoreCase("XMLHttpRequest"))
+                || (accept != null && accept.toLowerCase().contains("application/json"));
+
+        if (wantsJson) {
+            Map<String, Object> resp = new HashMap<>();
+            resp.put("status", "ok");
+            resp.put("paymentId", id);
+            return ResponseEntity.ok(resp);
+        }
+
+        redirectAttributes.addFlashAttribute("successMessage", "Uplata je uspješno stornirana.");
         return "redirect:/payments";
     }
 }
