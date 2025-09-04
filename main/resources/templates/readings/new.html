@@ -94,6 +94,8 @@ $(document).ready(function() {
     var hasLatestReading = false;
     var lastReadingDateStr = null;
     var dateHasError = false;
+    var todayStr = null;
+    var datePicker = null;
 
     // Postavljanje današnjeg datuma kao zadatog
     function setToday() {
@@ -101,9 +103,14 @@ $(document).ready(function() {
         var yyyy = today.getFullYear();
         var mm = String(today.getMonth() + 1).padStart(2, '0');
         var dd = String(today.getDate()).padStart(2, '0');
-        var todayStr = `${yyyy}-${mm}-${dd}`;
+        todayStr = `${yyyy}-${mm}-${dd}`;
         $readingDate.val(todayStr);  // Postavljanje današnjeg datuma kao zadatog
         $readingDate.attr('max', todayStr);  // Bound the date to today's max date
+        if ($readingDate.length && $readingDate[0]._flatpickr) {
+            datePicker = $readingDate[0]._flatpickr;
+            datePicker.set('maxDate', todayStr);
+            datePicker.setDate(todayStr, true);
+        }
     }
     setToday();
     validateDate();  // Pokretanje validacije odmah
@@ -158,12 +165,19 @@ $(document).ready(function() {
                     $lastReadingInfo.text('Poslednje očitanje: ' + data.lastReadingDate);
                     // Set minimum selectable date to last reading date
                     $readingDate.attr('min', lastReadingDateStr);
+                    if ($readingDate[0]._flatpickr) {
+                        datePicker = $readingDate[0]._flatpickr;
+                        datePicker.set('minDate', lastReadingDateStr);
+                        if (todayStr) { datePicker.set('maxDate', todayStr); }
+                    }
                     // Ensure current value falls within [lastReadingDate, today]
                     var currentVal = $readingDate.val();
                     if (currentVal < lastReadingDateStr) {
                         $readingDate.val(lastReadingDateStr);
+                        if ($readingDate[0]._flatpickr) { $readingDate[0]._flatpickr.setDate(lastReadingDateStr, true); }
                     } else if (currentVal > todayStr) {
                         $readingDate.val(todayStr);
+                        if ($readingDate[0]._flatpickr) { $readingDate[0]._flatpickr.setDate(todayStr, true); }
                     }
                 } else {
                     lastReadingDateStr = null;
@@ -171,8 +185,14 @@ $(document).ready(function() {
                     $lastReadingInfo.text('Nema prethodnih očitanja');
                     // No previous reading: allow any date up to today
                     $readingDate.removeAttr('min');
+                    if ($readingDate[0]._flatpickr) {
+                        datePicker = $readingDate[0]._flatpickr;
+                        datePicker.set('minDate', null);
+                        if (todayStr) { datePicker.set('maxDate', todayStr); }
+                    }
                     if ($readingDate.val() > todayStr) {
                         $readingDate.val(todayStr);
+                        if ($readingDate[0]._flatpickr) { $readingDate[0]._flatpickr.setDate(todayStr, true); }
                     }
                 }
                 calculateConsumption();
