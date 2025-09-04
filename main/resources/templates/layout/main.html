@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${pageTitle != null ? pageTitle + ' - Vodovod Management' : 'Vodovod Management'}">Vodovod Management</title>
+    <title th:text="${pageTitle != null ? pageTitle + ' - ' + appName : appName}">Vodovod Management</title>
     
     <!-- CSRF Meta -->
     <meta name="_csrf" th:content="${_csrf != null ? _csrf.token : ''}" />
@@ -101,7 +101,7 @@
         <div class="container-fluid">
             <a class="navbar-brand" href="/dashboard">
                 <i class="bi bi-droplet-fill"></i>
-                Vodovod Management
+                <span th:text="${appName}">Vodovod Management</span>
             </a>
             
             <div class="navbar-nav ms-auto">
