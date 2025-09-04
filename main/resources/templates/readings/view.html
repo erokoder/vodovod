@@ -63,7 +63,7 @@
                     </div>
                 </div>
             </div>
-            <div class="mb-3" th:if="${!reading.billGenerated and !reading.cancelled}">
+            <div class="mb-3" th:if="${!reading.billGenerated and !reading.cancelled and !reading.initialReading}">
                 <form th:action="@{/readings/{id}/cancel(id=${reading.id})}" method="post"
                       onsubmit="return confirm('Jeste li sigurni da želite stornirati ovo očitanje?');">
                     <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />

@@ -149,6 +149,9 @@ public class MeterReadingService {
         if (reading.isBillGenerated()) {
             throw new IllegalStateException("Ovo očitanje je već iskorišteno za račun i ne može se stornirati.");
         }
+        if (reading.isInitialReading()) {
+            throw new IllegalStateException("Inicijalno očitanje (0 m³) nije moguće stornirati.");
+        }
         if (reading.isCancelled()) {
             return; // idempotentno
         }

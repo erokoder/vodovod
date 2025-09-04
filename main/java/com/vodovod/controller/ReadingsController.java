@@ -162,6 +162,10 @@ public class ReadingsController {
                 redirectAttributes.addFlashAttribute("errorMessage", "Ovo očitanje je korišteno za račun i ne može se stornirati.");
                 return "redirect:/readings";
             }
+            if (reading.isInitialReading()) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Inicijalno očitanje (0 m³) nije moguće stornirati.");
+                return "redirect:/readings";
+            }
             meterReadingService.cancelReading(id);
             redirectAttributes.addFlashAttribute("successMessage", "Očitanje je uspješno stornirano.");
         } catch (Exception e) {

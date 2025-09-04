@@ -158,4 +158,8 @@ public class MeterReading {
             this.consumption = readingValue.subtract(previousReadingValue);
         }
     }
+
+    public boolean isInitialReading() {
+        return previousReadingValue == null || BigDecimal.ZERO.compareTo(previousReadingValue) == 0;
+    }
 }

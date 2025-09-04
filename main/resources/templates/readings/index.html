@@ -83,7 +83,7 @@
                                         <a th:href="@{/readings/{id}(id=${reading.id})}" class="btn btn-sm btn-outline-info me-1" title="Pregled detalja">
                                             <i class="bi bi-eye"></i>
                                         </a>
-                                        <form th:if="${!reading.billGenerated and !reading.cancelled}"
+                                        <form th:if="${!reading.billGenerated and !reading.cancelled and !reading.initialReading}"
                                               th:action="@{/readings/{id}/cancel(id=${reading.id})}"
                                               method="post" class="d-inline"
                                               onsubmit="return confirm('Jeste li sigurni da želite stornirati ovo očitanje?');">
