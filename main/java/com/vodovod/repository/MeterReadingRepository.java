@@ -15,19 +15,22 @@ public interface MeterReadingRepository extends JpaRepository<MeterReading, Long
     
     List<MeterReading> findByUserOrderByReadingDateDesc(User user);
     
-    @Query("SELECT mr FROM MeterReading mr WHERE mr.user = :user AND mr.cancelled = false ORDER BY mr.readingDate DESC")
+    @Query("SELECT mr FROM MeterReading mr WHERE mr.user = :user AND COALESCE(mr.cancelled, false) = false ORDER BY mr.readingDate DESC")
     List<MeterReading> findByUserOrderByReadingDateDescending(User user);
     
     Optional<MeterReading> findTopByUserOrderByReadingDateDesc(User user);
     Optional<MeterReading> findTopByUserAndCancelledFalseOrderByReadingDateDesc(User user);
     
-    @Query("SELECT mr FROM MeterReading mr WHERE mr.user = :user AND mr.readingDate = :readingDate AND mr.cancelled = false")
+    @Query("SELECT mr FROM MeterReading mr WHERE mr.user = :user AND COALESCE(mr.cancelled, false) = false ORDER BY mr.readingDate DESC")
+    Optional<MeterReading> findTopActiveByUserOrderByReadingDateDesc(User user);
+    
+    @Query("SELECT mr FROM MeterReading mr WHERE mr.user = :user AND mr.readingDate = :readingDate AND COALESCE(mr.cancelled, false) = false")
     Optional<MeterReading> findByUserAndReadingDate(User user, LocalDate readingDate);
     
-    @Query("SELECT mr FROM MeterReading mr WHERE mr.billGenerated = false AND mr.cancelled = false")
+    @Query("SELECT mr FROM MeterReading mr WHERE mr.billGenerated = false AND COALESCE(mr.cancelled, false) = false")
     List<MeterReading> findReadingsWithoutBill();
     
-    @Query("SELECT mr FROM MeterReading mr WHERE mr.user = :user AND mr.billGenerated = false AND mr.cancelled = false ORDER BY mr.readingDate ASC")
+    @Query("SELECT mr FROM MeterReading mr WHERE mr.user = :user AND mr.billGenerated = false AND COALESCE(mr.cancelled, false) = false ORDER BY mr.readingDate ASC")
     List<MeterReading> findUnbilledReadingsByUser(User user);
     
     // Ascending order per user (used for recalculation after cancellation)
