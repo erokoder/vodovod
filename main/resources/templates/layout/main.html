@@ -115,7 +115,7 @@
                               th:text="${(currentUserBalance.status == 'Plaćeno sve' ? '0 KM' : currentUserBalance.status + ' ' + #numbers.formatDecimal(currentUserBalance.amount, 1, 2) + ' KM')}">
                             0 KM
                         </span>
-                        <span sec:authentication="name">Korisnik</span>
+                        <span th:text="${currentUserFullName != null ? currentUserFullName : 'Korisnik'}">Korisnik</span>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li><a class="dropdown-item" href="/my-account">

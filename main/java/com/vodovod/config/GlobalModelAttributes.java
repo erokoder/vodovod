@@ -42,5 +42,16 @@ public class GlobalModelAttributes {
                 .map(balanceService::getBalanceForUser)
                 .orElse(null);
     }
+
+    @ModelAttribute("currentUserFullName")
+    public String populateCurrentUserFullName(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return null;
+        }
+
+        return userService.getUserByUsername(authentication.getName())
+                .map(com.vodovod.model.User::getFullName)
+                .orElse(null);
+    }
 }
 
