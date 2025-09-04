@@ -30,9 +30,9 @@ public class BillPdfService {
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-            InputStream templateStream = BillPdfService.class.getResourceAsStream("/tamplate_invoice.pdf");
+            InputStream templateStream = BillPdfService.class.getResourceAsStream("/tamplate_invoice-2.pdf");
             if (templateStream == null) {
-                throw new RuntimeException("PDF template '/tamplate_invoice.pdf' nije pronađen u resources.");
+                throw new RuntimeException("PDF template '/tamplate_invoice-2.pdf' nije pronađen u resources.");
             }
 
             PdfReader pdfReader = new PdfReader(templateStream);
@@ -44,6 +44,7 @@ public class BillPdfService {
             Font font = new Font(base, 10, Font.NORMAL, BaseColor.BLACK);
             Font font2 = new Font(base, 13, Font.NORMAL, BaseColor.BLACK);
             Font font3 = new Font(base, 11, Font.NORMAL, BaseColor.BLACK);
+            Font font4 = new Font(base, 20, Font.BOLD, BaseColor.BLACK);
 
             // Formatters
             DateTimeFormatter df = DateTimeFormatter.ofPattern("dd.MM.yyyy");
@@ -91,9 +92,11 @@ public class BillPdfService {
             double dug = dugDecimal.doubleValue();
 
             // Header and meta mapped to template positions (legacy layout)
+            ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase(settings.getCompanyName(), font4), 60, 760, 0);
             ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase(client, font2), 60, 670, 0);
             ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase(addressLine1, font2), 60, 655, 0);
             ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase(addressLine2, font2), 60, 640, 0);
+            ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase(settings.getCompanyPhone(), font), 385, 630, 0);
 
             if (!dateOd.isBlank() && !oldValue.isBlank()) {
                 ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase(dateOd + " -> " + oldValue, font), 60, 550, 0);
@@ -118,13 +121,13 @@ public class BillPdfService {
             if (Math.abs(dug) < 0.005) {
                 ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase("Nema prethodni dugovanja", font), 60, 402, 0);
             } else if (dug < 0) {
-                ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase("Vaš dug na datum izdavanja ovog računa je: " + currency.format(dug) + " , molimo Vas da izmirite svoje obaveze.", font), 60, 402, 0);
+                ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase("Vaš dug na datum izdavanja ovog računa je: " + currency.format(Math.abs(dug)) + " , molimo Vas da izmirite svoje obaveze.", font), 60, 402, 0);
             } else {
                 double platit = (iznos + pausal) - dug;
                 if (platit <= 0) {
-                    ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase("U pretplati ste imali: " + currency.format(dug) + " nakon ovog računa ostane vam još: " + currency.format((iznos + pausal) - dug), font), 60, 402, 0);
+                    ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase("U pretplati ste imali: " + currency.format(Math.abs(dug)) + " nakon ovog računa ostane vam još: " + currency.format(Math.abs((iznos + pausal) - dug)), font), 60, 402, 0);
                 } else {
-                    ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase("U pretplati ste imali: " + currency.format(dug) + " nakon ovog računa ostane vam još: " + currency.format(0), font), 60, 402, 0);
+                    ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase("U pretplati ste imali: " + currency.format(Math.abs(dug)) + " nakon ovog računa ostane vam još: " + currency.format(0), font), 60, 402, 0);
                 }
             }
 
@@ -138,17 +141,17 @@ public class BillPdfService {
             String payerLine = client + (addressLine1.isBlank() ? "" : ", " + addressLine1) + (addressLine2.isBlank() ? "" : " " + addressLine2);
             ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase(payerLine, font3), 31, 237, 0);
             ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase(serialNumber, font3), 31, 183, 0);
+            // Broj računa u poljima (donji dio) — uzmi iz admin panela (billNumber)
+            String billNumberStr = safe(bill.getAccountNumber());
+            if (!billNumberStr.isBlank()) {
+                String compact = billNumberStr.replaceAll("\\s+", "");
+                drawCharactersInBoxes(canvas, compact, 387f, 196f, 12f, font3);
+            }
 
             String companyName = safe(settings.getCompanyName());
             String companyAddress = settings.getCompanyAddress();
-            String companyLine1 = companyName + (companyAddress != null && !companyAddress.isBlank() ? ", " + companyAddress : "");
-            ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase(companyLine1, font3), 31, 127, 0);
-            // Optional second line for city/extra address if provided after comma
-            String[] compParts = companyLine1.split(",");
-            String companyLine2 = compParts.length > 2 ? compParts[2].trim() : (compParts.length > 1 ? compParts[1].trim() : "");
-            if (!companyLine2.isBlank()) {
-                ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase(companyLine2, font3), 31, 115, 0);
-            }
+            ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase(companyName, font3), 31, 127, 0);
+            ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase(companyAddress, font3), 31, 115, 0);
 
             double platit = (iznos + pausal) - dug;
             if (dug > 0) {
@@ -179,4 +182,16 @@ public class BillPdfService {
     private static BigDecimal nz(BigDecimal v) { return v == null ? BigDecimal.ZERO : v; }
 
     private static String safe(String v) { return v == null ? "" : v; }
+
+    private static void drawCharactersInBoxes(PdfContentByte canvas, String text, float startX, float baselineY, float charSpacing, Font font) {
+        if (text == null || text.isEmpty()) {
+            return;
+        }
+        float x = startX;
+        for (int i = 0; i < text.length(); i++) {
+            String ch = String.valueOf(text.charAt(i));
+            ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase(ch, font), x, baselineY, 0);
+            x += charSpacing;
+        }
+    }
 }
