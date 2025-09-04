@@ -37,6 +37,9 @@ public class MeterReading {
     
     @Column(name = "bill_generated")
     private boolean billGenerated = false; // Da li je generiran račun za ovo očitanje
+
+    @Column(name = "cancelled")
+    private Boolean cancelled = Boolean.FALSE; // Da li je očitanje stornirano (ne koristi se u izračunima)
     
     private String notes; // Napomene
     
@@ -116,6 +119,14 @@ public class MeterReading {
     public void setBillGenerated(boolean billGenerated) {
         this.billGenerated = billGenerated;
     }
+
+    public boolean isCancelled() {
+        return Boolean.TRUE.equals(cancelled);
+    }
+
+    public void setCancelled(boolean cancelled) {
+        this.cancelled = cancelled;
+    }
     
     public String getNotes() {
         return notes;
@@ -146,5 +157,9 @@ public class MeterReading {
         if (previousReadingValue != null && readingValue != null) {
             this.consumption = readingValue.subtract(previousReadingValue);
         }
+    }
+
+    public boolean isInitialReading() {
+        return previousReadingValue == null || BigDecimal.ZERO.compareTo(previousReadingValue) == 0;
     }
 }

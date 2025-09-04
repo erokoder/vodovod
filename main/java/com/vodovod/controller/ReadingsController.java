@@ -151,6 +151,30 @@ public class ReadingsController {
     }
 
     /**
+     * Storniranje (cancel) očitanja koje nije korišteno za račun.
+     */
+    @PostMapping("/{id}/cancel")
+    public String cancel(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            MeterReading reading = meterReadingService.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Očitanje nije pronađeno"));
+            if (reading.isBillGenerated()) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Ovo očitanje je korišteno za račun i ne može se stornirati.");
+                return "redirect:/readings";
+            }
+            if (reading.isInitialReading()) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Inicijalno očitanje (0 m³) nije moguće stornirati.");
+                return "redirect:/readings";
+            }
+            meterReadingService.cancelReading(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Očitanje je uspješno stornirano.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Greška pri storniranju očitanja: " + e.getMessage());
+        }
+        return "redirect:/readings";
+    }
+
+    /**
      * API endpoint za dohvaćanje prethodnog očitanja korisnika
      */
     @GetMapping("/api/user/{userId}/latest-reading")
