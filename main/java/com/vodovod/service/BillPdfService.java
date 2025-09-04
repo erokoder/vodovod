@@ -30,9 +30,9 @@ public class BillPdfService {
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-            InputStream templateStream = BillPdfService.class.getResourceAsStream("/tamplate_invoice.pdf");
+            InputStream templateStream = BillPdfService.class.getResourceAsStream("/tamplate_invoice-2.pdf");
             if (templateStream == null) {
-                throw new RuntimeException("PDF template '/tamplate_invoice.pdf' nije pronađen u resources.");
+                throw new RuntimeException("PDF template '/tamplate_invoice-2.pdf' nije pronađen u resources.");
             }
 
             PdfReader pdfReader = new PdfReader(templateStream);
@@ -138,6 +138,12 @@ public class BillPdfService {
             String payerLine = client + (addressLine1.isBlank() ? "" : ", " + addressLine1) + (addressLine2.isBlank() ? "" : " " + addressLine2);
             ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase(payerLine, font3), 31, 237, 0);
             ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase(serialNumber, font3), 31, 183, 0);
+            // Broj računa u poljima (donji dio) — uzmi iz admin panela (billNumber)
+            String billNumberStr = safe(bill.getBillNumber());
+            if (!billNumberStr.isBlank()) {
+                String compact = billNumberStr.replaceAll("\\s+", "");
+                drawCharactersInBoxes(canvas, compact, 375f, 183f, 12f, font3);
+            }
 
             String companyName = safe(settings.getCompanyName());
             String companyAddress = settings.getCompanyAddress();
@@ -179,4 +185,16 @@ public class BillPdfService {
     private static BigDecimal nz(BigDecimal v) { return v == null ? BigDecimal.ZERO : v; }
 
     private static String safe(String v) { return v == null ? "" : v; }
+
+    private static void drawCharactersInBoxes(PdfContentByte canvas, String text, float startX, float baselineY, float charSpacing, Font font) {
+        if (text == null || text.isEmpty()) {
+            return;
+        }
+        float x = startX;
+        for (int i = 0; i < text.length(); i++) {
+            String ch = String.valueOf(text.charAt(i));
+            ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase(ch, font), x, baselineY, 0);
+            x += charSpacing;
+        }
+    }
 }
