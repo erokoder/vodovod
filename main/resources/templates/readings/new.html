@@ -7,13 +7,7 @@
 </head>
 <body>
 <div layout:fragment="content">
-    <!-- Success/Error Messages -->
-    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
-        <span th:text="${successMessage}"></span>
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-        </button>
-    </div>
+    <!-- Success message handled globally in layout/main.html -->
 
     <!-- Content Row -->
     <div class="row">
@@ -43,6 +37,9 @@
                                    th:field="*{readingDate}" required>
                             <div th:if="${#fields.hasErrors('readingDate')}" class="text-danger">
                                 <small th:errors="*{readingDate}"></small>
+                            </div>
+                            <div id="dateValidationMessage" class="text-danger" style="display: none;">
+                                <small></small>
                             </div>
                         </div>
                         <div class="form-group">
@@ -94,9 +91,29 @@ $(document).ready(function() {
     var $submitBtn = $('#submitBtn');
     var $form = $('#newReadingForm');
     var pendingWarn = null;
+    var hasLatestReading = false;
+    var lastReadingDateStr = null;
+    var dateHasError = false;
+    var todayStr = null;
+    var datePicker = null;
 
-    // Set today's date as default
-    $readingDate.val(new Date().toISOString().split('T')[0]);
+    // Postavljanje današnjeg datuma kao zadatog
+    function setToday() {
+        var today = new Date();
+        var yyyy = today.getFullYear();
+        var mm = String(today.getMonth() + 1).padStart(2, '0');
+        var dd = String(today.getDate()).padStart(2, '0');
+        todayStr = `${yyyy}-${mm}-${dd}`;
+        $readingDate.val(todayStr);  // Postavljanje današnjeg datuma kao zadatog
+        $readingDate.attr('max', todayStr);  // Bound the date to today's max date
+        if ($readingDate.length && $readingDate[0]._flatpickr) {
+            datePicker = $readingDate[0]._flatpickr;
+            datePicker.set('maxDate', todayStr);
+            datePicker.setDate(todayStr, true);
+        }
+    }
+    setToday();
+    validateDate();  // Pokretanje validacije odmah
 
     // When user is selected, load previous reading
     $userSelect.on('change', function() {
@@ -108,10 +125,20 @@ $(document).ready(function() {
         }
     });
 
-    // When current reading or date changes, validate and calculate consumption
-    $currentReading.add($readingDate).on('input change', function() {
+    // When current reading changes, validate reading and recalc consumption
+    $currentReading.on('input change', function() {
         calculateConsumption();
-        validateReading();
+        if (!dateHasError) {
+            validateReading();
+        }
+    });
+
+    // When date changes, validate date first, then reading if date is valid
+    $readingDate.on('input change', function() {
+        validateDate();
+        if (!dateHasError) {
+            validateReading();
+        }
     });
 
     // Intercept submit to show warning confirmation if needed
@@ -131,15 +158,48 @@ $(document).ready(function() {
             url: '/readings/api/user/' + userId + '/latest-reading',
             type: 'GET',
             success: function(data) {
-                if (data.hasReading) {
+                hasLatestReading = !!data.hasReading;
+                if (hasLatestReading) {
+                    lastReadingDateStr = data.lastReadingDate;
                     $previousReading.val(data.previousReading);
                     $lastReadingInfo.text('Poslednje očitanje: ' + data.lastReadingDate);
+                    // Set minimum selectable date to last reading date
+                    $readingDate.attr('min', lastReadingDateStr);
+                    if ($readingDate[0]._flatpickr) {
+                        datePicker = $readingDate[0]._flatpickr;
+                        datePicker.set('minDate', lastReadingDateStr);
+                        if (todayStr) { datePicker.set('maxDate', todayStr); }
+                    }
+                    // Ensure current value falls within [lastReadingDate, today]
+                    var currentVal = $readingDate.val();
+                    if (currentVal < lastReadingDateStr) {
+                        $readingDate.val(lastReadingDateStr);
+                        if ($readingDate[0]._flatpickr) { $readingDate[0]._flatpickr.setDate(lastReadingDateStr, true); }
+                    } else if (currentVal > todayStr) {
+                        $readingDate.val(todayStr);
+                        if ($readingDate[0]._flatpickr) { $readingDate[0]._flatpickr.setDate(todayStr, true); }
+                    }
                 } else {
+                    lastReadingDateStr = null;
                     $previousReading.val('0.000');
                     $lastReadingInfo.text('Nema prethodnih očitanja');
+                    // No previous reading: allow any date up to today
+                    $readingDate.removeAttr('min');
+                    if ($readingDate[0]._flatpickr) {
+                        datePicker = $readingDate[0]._flatpickr;
+                        datePicker.set('minDate', null);
+                        if (todayStr) { datePicker.set('maxDate', todayStr); }
+                    }
+                    if ($readingDate.val() > todayStr) {
+                        $readingDate.val(todayStr);
+                        if ($readingDate[0]._flatpickr) { $readingDate[0]._flatpickr.setDate(todayStr, true); }
+                    }
                 }
                 calculateConsumption();
-                validateReading();
+                validateDate();
+                if (!dateHasError) {
+                    validateReading();
+                }
             },
             error: function(xhr) {
                 console.error('Error loading previous reading:', xhr.responseText);
@@ -175,7 +235,8 @@ $(document).ready(function() {
 
         if (!userId || !currentReading || !readingDate) {
             $validationMessage.hide();
-            $submitBtn.prop('disabled', false);
+            // Only enable submit if there is no date error
+            $submitBtn.prop('disabled', dateHasError);
             return;
         }
 
@@ -192,7 +253,7 @@ $(document).ready(function() {
                 pendingWarn = null;
                 if (data.valid) {
                     $validationMessage.hide();
-                    $submitBtn.prop('disabled', false);
+                    $submitBtn.prop('disabled', dateHasError ? true : false);
                     $currentReading.removeClass('is-invalid').addClass('is-valid');
                     if (data.warn && data.warningMessage) {
                         pendingWarn = data.warningMessage;
@@ -217,6 +278,39 @@ $(document).ready(function() {
     // Initialize if user is already selected (in case of form errors)
     if ($userSelect.val()) {
         loadPreviousReading($userSelect.val());
+    }
+
+    function validateDate() {
+        var dateVal = $readingDate.val();
+        var error = null;
+        dateHasError = false;
+        if (!dateVal) {
+            $('#dateValidationMessage').hide();
+            $readingDate.removeClass('is-invalid');
+            return true;
+        }
+        if (dateVal > todayStr) {
+            error = 'Datum očitanja ne može biti u budućnosti';
+        } else if (hasLatestReading && lastReadingDateStr && dateVal < lastReadingDateStr) {
+            error = 'Datum očitanja ne smije biti stariji od prethodnog (' + lastReadingDateStr + ')';
+        } else if (hasLatestReading && lastReadingDateStr && dateVal === lastReadingDateStr) {
+            // Helpful hint when user selects the same date as the last reading
+            error = 'Već postoji očitanje za odabrani datum (' + lastReadingDateStr + ')';
+        }
+
+        if (error) {
+            dateHasError = true;
+            $('#dateValidationMessage').find('small').text(error);
+            $('#dateValidationMessage').show();
+            $readingDate.addClass('is-invalid');
+            $submitBtn.prop('disabled', true);
+            return false;
+        } else {
+            $('#dateValidationMessage').hide();
+            $readingDate.removeClass('is-invalid');
+            // Do not force enable here; let reading validation decide
+            return true;
+        }
     }
 });
 </script>
