@@ -55,6 +55,7 @@ public class DataInitializer implements CommandLineRunner {
             settings.setCompanyName("Vodovod d.o.o.");
             settings.setCompanyAddress("Glavna ulica 1, 10000 Zagreb");
             settings.setCompanyPhone("01/234-5678");
+            settings.setCompanyOib("12345678901");
             settings.setCompanyEmail("info@vodovod.hr");
             settings.setBillDueDays(30);
             settings.setUpdatedBy("admin");

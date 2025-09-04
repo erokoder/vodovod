@@ -42,6 +42,9 @@ public class SystemSettings {
     @Column(name = "company_email")
     private String companyEmail; // Email tvrtke
     
+    @Column(name = "company_oib", length = 20)
+    private String companyOib; // OIB tvrtke
+    
     @Column(name = "bill_due_days")
     private Integer billDueDays = 30; // Broj dana do dospijeća računa
     
@@ -147,6 +150,14 @@ public class SystemSettings {
     
     public void setCompanyEmail(String companyEmail) {
         this.companyEmail = companyEmail;
+    }
+    
+    public String getCompanyOib() {
+        return companyOib;
+    }
+    
+    public void setCompanyOib(String companyOib) {
+        this.companyOib = companyOib;
     }
     
     public Integer getBillDueDays() {
