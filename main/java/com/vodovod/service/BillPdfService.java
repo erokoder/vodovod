@@ -97,6 +97,7 @@ public class BillPdfService {
             ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase(addressLine1, font2), 60, 655, 0);
             ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase(addressLine2, font2), 60, 640, 0);
             ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase(settings.getCompanyPhone(), font), 385, 630, 0);
+            ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase(settings.getCompanyOib(), font2), 63, 740, 0);
 
             if (!dateOd.isBlank() && !oldValue.isBlank()) {
                 ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase(dateOd + " -> " + oldValue, font), 60, 550, 0);
