@@ -38,8 +38,10 @@ public class SettingsController {
                                  @RequestParam(name = "accountNumber") String accountNumber,
                                  @RequestParam(name = "companyName", required = false) String companyName,
                                  @RequestParam(name = "companyAddress", required = false) String companyAddress,
+                                 @RequestParam(name = "companyPhone", required = false) String companyPhone,
+                                 @RequestParam(name = "companyOib", required = false) String companyOib,
                                  RedirectAttributes redirectAttributes) {
-        settingsService.updateSettings(waterPricePerM3, fixedFee, useFixedFee, accountNumber, companyName, companyAddress);
+        settingsService.updateSettings(waterPricePerM3, fixedFee, useFixedFee, accountNumber, companyName, companyAddress, companyPhone, companyOib);
         redirectAttributes.addFlashAttribute("successMessage", "Postavke su uspješno spremljene.");
         return "redirect:/settings";
     }
