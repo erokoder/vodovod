@@ -110,6 +110,8 @@
                        data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="bi bi-person-fill"></i>
                         <span th:text="${currentUserFullName != null ? currentUserFullName : 'Korisnik'}">Korisnik</span>
+                        <span th:if="${currentOrganizationName != null}" class="opacity-75 ms-2"
+                              th:text="'(' + ${currentOrganizationName} + ')'">(Org)</span>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li><a class="dropdown-item" href="/my-account">
@@ -178,6 +180,17 @@
                                    href="/settings">
                                     <i class="bi bi-gear"></i>
                                     Admin Panel
+                                </a>
+                            </li>
+                        </div>
+
+                        <!-- Super Admin Menu -->
+                        <div sec:authorize="hasRole('SUPER_ADMIN')">
+                            <li class="nav-item">
+                                <a class="nav-link" th:classappend="${activeMenu == 'organizations'} ? 'active'"
+                                   href="/organizations">
+                                    <i class="bi bi-buildings"></i>
+                                    Organizacije
                                 </a>
                             </li>
                         </div>

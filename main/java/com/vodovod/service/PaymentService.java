@@ -26,13 +26,29 @@ public class PaymentService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private CurrentUserService currentUserService;
+
     @Transactional
     public void recordPayment(Long userId, Long billId, LocalDate paymentDate, BigDecimal amount, String paymentMethod, String createdBy) {
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("Korisnik nije pronađen"));
+        // Tenant guard (for admin flows)
+        if (currentUserService.requireCurrentUser().isAdmin()) {
+            Long orgId = currentUserService.requireCurrentOrganizationId();
+            if (user.getOrganization() == null || !orgId.equals(user.getOrganization().getId())) {
+                throw new RuntimeException("Nemate pristup ovom korisniku.");
+            }
+        }
         BigDecimal remainingToAllocate = amount;
 
         if (billId != null) {
             Bill bill = billRepository.findById(billId).orElseThrow(() -> new RuntimeException("Račun nije pronađen"));
+            if (currentUserService.requireCurrentUser().isAdmin()) {
+                Long orgId = currentUserService.requireCurrentOrganizationId();
+                if (bill.getUser() == null || bill.getUser().getOrganization() == null || !orgId.equals(bill.getUser().getOrganization().getId())) {
+                    throw new RuntimeException("Nemate pristup ovom računu.");
+                }
+            }
             if (!bill.getUser().getId().equals(user.getId())) {
                 throw new RuntimeException("Odabrani račun ne pripada korisniku");
             }

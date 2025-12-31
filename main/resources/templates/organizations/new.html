@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="hr" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main}">
+<head>
+    <title>Nova organizacija</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="card">
+        <div class="card-body">
+            <form th:action="@{/organizations/new}" method="post" th:object="${organization}">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Naziv</label>
+                        <input class="form-control" type="text" th:field="*{name}" required>
+                        <div class="text-danger" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Oznaka (slug)</label>
+                        <input class="form-control" type="text" th:field="*{slug}" placeholder="npr. vodovod-zagreb" required>
+                        <div class="form-text">Koristi se kao jedinstvena oznaka organizacije.</div>
+                        <div class="text-danger" th:if="${#fields.hasErrors('slug')}" th:errors="*{slug}"></div>
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <h5 class="mb-3">Admin korisnik (opcionalno)</h5>
+                <div th:object="${adminUser}" class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Korisničko ime</label>
+                        <input class="form-control" type="text" th:field="*{username}" placeholder="npr. admin-zg">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Ime</label>
+                        <input class="form-control" type="text" th:field="*{firstName}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Prezime</label>
+                        <input class="form-control" type="text" th:field="*{lastName}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Email</label>
+                        <input class="form-control" type="email" th:field="*{email}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Lozinka</label>
+                        <input class="form-control" type="password" th:field="*{password}" placeholder="ako ostaviš prazno, generira se">
+                    </div>
+                </div>
+
+                <div class="mt-4 d-flex gap-2">
+                    <button class="btn btn-primary" type="submit">
+                        <i class="bi bi-check-circle"></i> Spremi
+                    </button>
+                    <a class="btn btn-outline-secondary" href="/organizations">Odustani</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+
+

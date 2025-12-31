@@ -24,15 +24,30 @@ public interface BillRepository extends JpaRepository<Bill, Long> {
     
     @Query("SELECT COUNT(b) FROM Bill b WHERE b.status = :status")
     long countByStatus(BillStatus status);
+
+    @Query("SELECT COUNT(b) FROM Bill b WHERE b.user.organization.id = :orgId AND b.status = :status")
+    long countByStatusAndOrganizationId(@Param("status") BillStatus status, @Param("orgId") Long organizationId);
+
+    @Query("SELECT COUNT(b) FROM Bill b WHERE b.user.organization.id = :orgId")
+    long countByOrganizationId(@Param("orgId") Long organizationId);
     
     @Query("SELECT SUM(b.totalAmount) FROM Bill b WHERE b.status = :status")
     BigDecimal sumTotalAmountByStatus(BillStatus status);
+
+    @Query("SELECT SUM(b.totalAmount) FROM Bill b WHERE b.user.organization.id = :orgId AND b.status = :status")
+    BigDecimal sumTotalAmountByStatusAndOrganizationId(@Param("status") BillStatus status, @Param("orgId") Long organizationId);
     
     @Query("SELECT SUM(b.paidAmount) FROM Bill b")
     BigDecimal sumPaidAmount();
+
+    @Query("SELECT SUM(b.paidAmount) FROM Bill b WHERE b.user.organization.id = :orgId")
+    BigDecimal sumPaidAmountByOrganizationId(@Param("orgId") Long organizationId);
     
     @Query("SELECT b FROM Bill b WHERE b.dueDate < :date AND b.status NOT IN ('PAID', 'CANCELLED')")
     List<Bill> findOverdueBills(LocalDate date);
+
+    @Query("SELECT b FROM Bill b WHERE b.user.organization.id = :orgId AND b.dueDate < :date AND b.status NOT IN ('PAID', 'CANCELLED')")
+    List<Bill> findOverdueBillsByOrganizationId(@Param("orgId") Long organizationId, @Param("date") LocalDate date);
     
     @Query("SELECT b FROM Bill b WHERE b.issueDate BETWEEN :startDate AND :endDate ORDER BY b.issueDate DESC")
     List<Bill> findByIssueDateBetween(LocalDate startDate, LocalDate endDate);
@@ -58,6 +73,13 @@ public interface BillRepository extends JpaRepository<Bill, Long> {
     // Flexible search by optional filters: user and issue date range
     @Query("SELECT b FROM Bill b WHERE (:user IS NULL OR b.user = :user) AND (:startDate IS NULL OR b.issueDate >= :startDate) AND (:endDate IS NULL OR b.issueDate <= :endDate) ORDER BY b.issueDate DESC")
     List<Bill> search(@Param("user") User user, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+
+    // Same search but scoped to organization
+    @Query("SELECT b FROM Bill b WHERE b.user.organization.id = :orgId AND (:user IS NULL OR b.user = :user) AND (:startDate IS NULL OR b.issueDate >= :startDate) AND (:endDate IS NULL OR b.issueDate <= :endDate) ORDER BY b.issueDate DESC")
+    List<Bill> searchByOrganizationId(@Param("orgId") Long organizationId, @Param("user") User user, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+
+    @Query("SELECT b FROM Bill b WHERE b.id = :id AND b.user.organization.id = :orgId")
+    Optional<Bill> findByIdAndOrganizationId(@Param("id") Long id, @Param("orgId") Long organizationId);
 
     // Returns the maximum numeric prefix (x) in bill_number formatted as x/YYYY for the given year
     @Query(value = "SELECT COALESCE(MAX(CAST(SUBSTRING(b.bill_number, 1, LOCATE('/', b.bill_number) - 1) AS INT)), 0) FROM bills b WHERE b.bill_number LIKE CONCAT('%/', :year)", nativeQuery = true)

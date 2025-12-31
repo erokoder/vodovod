@@ -9,6 +9,7 @@ import com.vodovod.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -22,10 +23,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.math.RoundingMode;
 
 @Controller
 @RequestMapping("/readings")
+@PreAuthorize("hasRole('ADMIN')")
 public class ReadingsController {
 
     @Autowired

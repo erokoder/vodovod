@@ -29,44 +29,48 @@ public class DashboardService {
     @Autowired
     private MeterReadingRepository meterReadingRepository;
 
+    @Autowired
+    private CurrentUserService currentUserService;
+
     public DashboardStats getDashboardStats() {
         DashboardStats stats = new DashboardStats();
+        Long orgId = currentUserService.requireCurrentOrganizationId();
 
         // Statistike korisnika
-        stats.setTotalUsers(userRepository.countByRoleAndEnabled(Role.USER));
-        stats.setActiveUsers(userRepository.findActiveWaterUsers().size());
+        stats.setTotalUsers(userRepository.countByOrganizationAndRoleAndEnabled(orgId, Role.USER));
+        stats.setActiveUsers(userRepository.findActiveWaterUsers(orgId).size());
 
         // Statistike računa
-        stats.setTotalBills(billRepository.count());
-        stats.setPaidBills(billRepository.countByStatus(BillStatus.PAID));
+        stats.setTotalBills(billRepository.countByOrganizationId(orgId));
+        stats.setPaidBills(billRepository.countByStatusAndOrganizationId(BillStatus.PAID, orgId));
         stats.setUnpaidBills(
-            billRepository.countByStatus(BillStatus.PENDING) +
-            billRepository.countByStatus(BillStatus.PARTIALLY_PAID)
+            billRepository.countByStatusAndOrganizationId(BillStatus.PENDING, orgId) +
+            billRepository.countByStatusAndOrganizationId(BillStatus.PARTIALLY_PAID, orgId)
         );
-        stats.setOverdueBills(billRepository.findOverdueBills(LocalDate.now()).size());
+        stats.setOverdueBills(billRepository.findOverdueBillsByOrganizationId(orgId, LocalDate.now()).size());
 
         // Finansijske statistike
-        BigDecimal totalRevenue = paymentRepository.sumTotalAmount();
+        BigDecimal totalRevenue = paymentRepository.sumTotalAmountByOrganizationId(orgId);
         stats.setTotalRevenue(totalRevenue != null ? totalRevenue : BigDecimal.ZERO);
 
-        BigDecimal pendingRevenue = billRepository.sumTotalAmountByStatus(BillStatus.PENDING);
-        BigDecimal partiallyPaidRevenue = billRepository.sumTotalAmountByStatus(BillStatus.PARTIALLY_PAID);
+        BigDecimal pendingRevenue = billRepository.sumTotalAmountByStatusAndOrganizationId(BillStatus.PENDING, orgId);
+        BigDecimal partiallyPaidRevenue = billRepository.sumTotalAmountByStatusAndOrganizationId(BillStatus.PARTIALLY_PAID, orgId);
         BigDecimal totalPending = (pendingRevenue != null ? pendingRevenue : BigDecimal.ZERO)
                 .add(partiallyPaidRevenue != null ? partiallyPaidRevenue : BigDecimal.ZERO);
         stats.setPendingRevenue(totalPending);
 
         // Statistike očitanja
-        stats.setTotalReadings(meterReadingRepository.count());
+        stats.setTotalReadings(meterReadingRepository.countByOrganizationId(orgId));
         
         LocalDate startOfMonth = LocalDate.now().withDayOfMonth(1);
         LocalDate endOfMonth = LocalDate.now();
         stats.setReadingsThisMonth(
-            meterReadingRepository.countByReadingDateBetween(startOfMonth, endOfMonth)
+            meterReadingRepository.countByOrganizationIdAndReadingDateBetween(orgId, startOfMonth, endOfMonth)
         );
 
         // Balansi korisnika
         List<UserBalanceDTO> userBalances = new ArrayList<>();
-        userRepository.findByRoleAndEnabledTrue(Role.USER).forEach(user -> {
+        userRepository.findByOrganizationIdAndRoleAndEnabledTrue(orgId, Role.USER).forEach(user -> {
             BigDecimal totalByUser = billRepository.sumTotalAmountByUser(user);
             BigDecimal paidByUser = billRepository.sumPaidAmountByUser(user);
             BigDecimal prepayments = paymentRepository.sumPrepaymentByUser(user);

@@ -12,7 +12,9 @@ public class AuthController {
     public String login(Authentication authentication) {
         // Ako je korisnik već prijavljen, preusmjeri ga na dashboard
         if (authentication != null && authentication.isAuthenticated()) {
-            if (authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
+            if (authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_SUPER_ADMIN"))) {
+                return "redirect:/organizations";
+            } else if (authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
                 return "redirect:/dashboard";
             } else {
                 return "redirect:/my-bills";
@@ -24,7 +26,9 @@ public class AuthController {
     @GetMapping("/")
     public String home(Authentication authentication) {
         if (authentication != null && authentication.isAuthenticated()) {
-            if (authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
+            if (authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_SUPER_ADMIN"))) {
+                return "redirect:/organizations";
+            } else if (authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
                 return "redirect:/dashboard";
             } else {
                 return "redirect:/my-bills";

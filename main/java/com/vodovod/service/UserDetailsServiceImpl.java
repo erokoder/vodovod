@@ -20,7 +20,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByUsername(username)
+        User user = userRepository.findByUsernameIgnoreCase(username != null ? username.trim() : null)
                 .orElseThrow(() -> new UsernameNotFoundException("Korisnik nije pronađen: " + username));
 
         if (!user.isEnabled()) {

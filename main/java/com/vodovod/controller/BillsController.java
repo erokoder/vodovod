@@ -8,6 +8,7 @@ import com.vodovod.service.BillService;
 import com.vodovod.service.UserService;
 import com.vodovod.service.SettingsService;
 import com.vodovod.service.BillPdfService;
+import com.vodovod.service.CurrentUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -44,6 +45,9 @@ public class BillsController {
     @Autowired
     private BillPdfService billPdfService;
 
+    @Autowired
+    private CurrentUserService currentUserService;
+
     @GetMapping
     public String index(
             @RequestParam(value = "userId", required = false) Long userId,
@@ -68,7 +72,8 @@ public class BillsController {
             }
         }
 
-        model.addAttribute("bills", billRepository.search(selectedUser, fromDate, toDate));
+        Long orgId = currentUserService.requireCurrentOrganizationId();
+        model.addAttribute("bills", billRepository.searchByOrganizationId(orgId, selectedUser, fromDate, toDate));
         return "bills/index";
     }
 
@@ -96,7 +101,8 @@ public class BillsController {
 
     @GetMapping("/{id}/pdf")
     public ResponseEntity<byte[]> downloadPdf(@PathVariable("id") Long id) {
-        Bill bill = billRepository.findById(id).orElseThrow();
+        Long orgId = currentUserService.requireCurrentOrganizationId();
+        Bill bill = billRepository.findByIdAndOrganizationId(id, orgId).orElseThrow();
         byte[] pdf = billPdfService.createBillPdf(bill, settingsService.getCurrentSettingsOrNew());
         String filename = (bill.getBillNumber() != null ? bill.getBillNumber().replace('/', '-') : ("racun-" + id)) + ".pdf";
         return ResponseEntity.ok()
