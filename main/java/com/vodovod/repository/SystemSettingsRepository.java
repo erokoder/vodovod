@@ -8,6 +8,7 @@ import java.util.Optional;
 
 @Repository
 public interface SystemSettingsRepository extends JpaRepository<SystemSettings, Long> {
-    
     Optional<SystemSettings> findTopByOrderByIdAsc();
+
+    Optional<SystemSettings> findByOrganizationId(Long organizationId);
 }

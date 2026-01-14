@@ -19,6 +19,9 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     
     @Query("SELECT p FROM Payment p ORDER BY p.paymentDate DESC")
     List<Payment> findAllOrderByPaymentDateDesc();
+
+    @Query("SELECT p FROM Payment p WHERE p.user.organization.id = :orgId ORDER BY p.paymentDate DESC")
+    List<Payment> findAllByOrganizationIdOrderByPaymentDateDesc(@Param("orgId") Long organizationId);
     
     @Query("SELECT p FROM Payment p WHERE p.paymentDate BETWEEN :startDate AND :endDate ORDER BY p.paymentDate DESC")
     List<Payment> findByPaymentDateBetween(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
@@ -31,6 +34,9 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     
     @Query("SELECT SUM(p.amount) FROM Payment p")
     BigDecimal sumTotalAmount();
+
+    @Query("SELECT SUM(p.amount) FROM Payment p WHERE p.user.organization.id = :orgId")
+    BigDecimal sumTotalAmountByOrganizationId(@Param("orgId") Long organizationId);
     
     List<Payment> findByUserAndBillIsNullOrderByPaymentDateAsc(User user);
     
@@ -40,4 +46,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     // Flexible search by optional filters: user and payment date range
     @Query("SELECT p FROM Payment p WHERE (:user IS NULL OR p.user = :user) AND (:startDate IS NULL OR p.paymentDate >= :startDate) AND (:endDate IS NULL OR p.paymentDate <= :endDate) ORDER BY p.paymentDate DESC")
     List<Payment> search(@Param("user") User user, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+
+    @Query("SELECT p FROM Payment p WHERE p.user.organization.id = :orgId AND (:user IS NULL OR p.user = :user) AND (:startDate IS NULL OR p.paymentDate >= :startDate) AND (:endDate IS NULL OR p.paymentDate <= :endDate) ORDER BY p.paymentDate DESC")
+    List<Payment> searchByOrganizationId(@Param("orgId") Long organizationId, @Param("user") User user, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 }

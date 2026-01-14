@@ -1,6 +1,7 @@
 package com.vodovod.model;
 
 public enum Role {
+    SUPER_ADMIN("Super Administrator"),
     ADMIN("Administrator"),
     USER("Korisnik");
 

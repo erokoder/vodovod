@@ -31,6 +31,14 @@ public class SecurityConfig {
 
             boolean isAdmin = authentication.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+            boolean isSuperAdmin = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_SUPER_ADMIN"));
+
+            // Super admin always lands on organizations, regardless of any saved request
+            if (isSuperAdmin) {
+                response.sendRedirect("/organizations");
+                return;
+            }
 
             if (savedRequest != null) {
                 String redirectUrl = savedRequest.getRedirectUrl();
@@ -61,7 +69,7 @@ public class SecurityConfig {
         http
             .authorizeHttpRequests(authz -> authz
                 .requestMatchers("/css/**", "/js/**", "/images/**", "/h2-console/**").permitAll()
-                .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/organizations/**").hasRole("SUPER_ADMIN")
                 .requestMatchers("/dashboard", "/users/**", "/readings/**", "/bills/**", "/payments/**", "/settings/**").hasRole("ADMIN")
                 .requestMatchers("/my-bills/**", "/my-account").hasAnyRole("USER", "ADMIN")
                 .anyRequest().authenticated()
@@ -83,7 +91,7 @@ public class SecurityConfig {
                 .ignoringRequestMatchers("/h2-console/**")
             )
             .headers(headers -> headers
-                .frameOptions().sameOrigin() // Za H2 console
+                .frameOptions(frame -> frame.sameOrigin()) // Za H2 console
             );
 
         return http.build();

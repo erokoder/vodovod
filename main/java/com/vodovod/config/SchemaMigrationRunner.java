@@ -36,6 +36,19 @@ public class SchemaMigrationRunner implements ApplicationRunner {
                     log.info("Schema updated: PAYMENTS.BILL_ID is now NULLABLE.");
                 }
             }
+
+            // Ensure global uniqueness for users.username and users.email (case-insensitive)
+            // (App normalizes to lower-case, but DB uniqueness is the final guard)
+            try {
+                jdbcTemplate.execute("CREATE UNIQUE INDEX IF NOT EXISTS UX_USERS_USERNAME_LC ON USERS(LOWER(USERNAME))");
+            } catch (Exception e) {
+                log.warn("Could not ensure UX_USERS_USERNAME_LC: {}", e.getMessage());
+            }
+            try {
+                jdbcTemplate.execute("CREATE UNIQUE INDEX IF NOT EXISTS UX_USERS_EMAIL_LC ON USERS(LOWER(EMAIL))");
+            } catch (Exception e) {
+                log.warn("Could not ensure UX_USERS_EMAIL_LC: {}", e.getMessage());
+            }
         } catch (Exception e) {
             // Non-fatal: log and continue; this is a best-effort fix for existing databases
             log.warn("Schema migration check failed (will continue): {}", e.getMessage());

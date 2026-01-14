@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,8 +39,19 @@ public class User {
     
     @Enumerated(EnumType.STRING)
     private Role role;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "organization_id")
+    private Organization organization;
     
     private String meterNumber; // Broj vodomjera - može biti null za admin-e koji nisu korisnici
+
+    // Used only on "create USER" form to create the initial meter reading (not persisted)
+    @Transient
+    private BigDecimal initialMeterReadingValue;
+
+    @Transient
+    private LocalDate initialMeterReadingDate;
     
     private String address;
     
@@ -131,6 +144,14 @@ public class User {
     public void setRole(Role role) {
         this.role = role;
     }
+
+    public Organization getOrganization() {
+        return organization;
+    }
+
+    public void setOrganization(Organization organization) {
+        this.organization = organization;
+    }
     
     public String getMeterNumber() {
         return meterNumber;
@@ -138,6 +159,22 @@ public class User {
     
     public void setMeterNumber(String meterNumber) {
         this.meterNumber = meterNumber;
+    }
+
+    public BigDecimal getInitialMeterReadingValue() {
+        return initialMeterReadingValue;
+    }
+
+    public void setInitialMeterReadingValue(BigDecimal initialMeterReadingValue) {
+        this.initialMeterReadingValue = initialMeterReadingValue;
+    }
+
+    public LocalDate getInitialMeterReadingDate() {
+        return initialMeterReadingDate;
+    }
+
+    public void setInitialMeterReadingDate(LocalDate initialMeterReadingDate) {
+        this.initialMeterReadingDate = initialMeterReadingDate;
     }
     
     public String getAddress() {

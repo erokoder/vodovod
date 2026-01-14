@@ -42,7 +42,7 @@ public class UserController {
         model.addAttribute("pageTitle", "Novi Korisnik");
         model.addAttribute("activeMenu", "users");
         model.addAttribute("user", user);
-        model.addAttribute("roles", Role.values());
+        model.addAttribute("roles", new Role[]{Role.ADMIN, Role.USER});
         
         return "users/form";
     }
@@ -56,7 +56,7 @@ public class UserController {
         if (result.hasErrors()) {
             model.addAttribute("pageTitle", "Novi Korisnik");
             model.addAttribute("activeMenu", "users");
-            model.addAttribute("roles", Role.values());
+            model.addAttribute("roles", new Role[]{Role.ADMIN, Role.USER});
             return "users/form";
         }
 
@@ -75,7 +75,7 @@ public class UserController {
         } catch (Exception e) {
             model.addAttribute("pageTitle", "Novi Korisnik");
             model.addAttribute("activeMenu", "users");
-            model.addAttribute("roles", Role.values());
+            model.addAttribute("roles", new Role[]{Role.ADMIN, Role.USER});
             model.addAttribute("errorMessage", e.getMessage());
             return "users/form";
         }
@@ -107,7 +107,7 @@ public class UserController {
         model.addAttribute("pageTitle", "Uredi Korisnika");
         model.addAttribute("activeMenu", "users");
         model.addAttribute("user", userOpt.get());
-        model.addAttribute("roles", Role.values());
+        model.addAttribute("roles", new Role[]{Role.ADMIN, Role.USER});
         
         return "users/form";
     }
@@ -124,7 +124,7 @@ public class UserController {
         if (result.hasErrors()) {
             model.addAttribute("pageTitle", "Uredi Korisnika");
             model.addAttribute("activeMenu", "users");
-            model.addAttribute("roles", Role.values());
+            model.addAttribute("roles", new Role[]{Role.ADMIN, Role.USER});
             return "users/form";
         }
 
@@ -138,7 +138,7 @@ public class UserController {
         } catch (Exception e) {
             model.addAttribute("pageTitle", "Uredi Korisnika");
             model.addAttribute("activeMenu", "users");
-            model.addAttribute("roles", Role.values());
+            model.addAttribute("roles", new Role[]{Role.ADMIN, Role.USER});
             model.addAttribute("errorMessage", e.getMessage());
             return "users/form";
         }

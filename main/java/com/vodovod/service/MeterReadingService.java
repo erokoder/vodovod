@@ -4,7 +4,6 @@ import com.vodovod.model.MeterReading;
 import com.vodovod.model.User;
 import com.vodovod.repository.MeterReadingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +18,34 @@ public class MeterReadingService {
 
     @Autowired
     private MeterReadingRepository meterReadingRepository;
+
+    @Autowired
+    private CurrentUserService currentUserService;
+
+    /**
+     * Sprema inicijalno očitanje za NOVOG korisnika.
+     * Za ovaj specifični slučaj želimo da su prethodno i trenutno očitanje jednaki
+     * (tj. potrošnja = 0), bez obzira na vrijednost inicijalnog stanja.
+     *
+     * Ne koristi standardni {@link #saveReading(MeterReading)} jer on automatski postavlja
+     * prethodno očitanje na 0 ako ne postoji prethodno očitanje.
+     */
+    public MeterReading saveInitialReadingForNewUser(MeterReading reading) {
+        if (reading == null || reading.getUser() == null) {
+            throw new IllegalArgumentException("Očitanje i korisnik su obavezni");
+        }
+        if (reading.getReadingValue() == null) {
+            throw new IllegalArgumentException("Vrijednost očitanja je obavezna");
+        }
+        if (reading.getReadingDate() == null) {
+            throw new IllegalArgumentException("Datum očitanja je obavezan");
+        }
+
+        reading.setPreviousReadingValue(reading.getReadingValue());
+        reading.setConsumption(BigDecimal.ZERO);
+        reading.setBillGenerated(false);
+        return meterReadingRepository.save(reading);
+    }
 
     /**
      * Sprema novo očitanje vodomjera
@@ -99,7 +126,8 @@ public class MeterReadingService {
      * Dohvaća sva očitanja sortirana po korisniku (ime) pa po datumu (najnovija prva)
      */
     public List<MeterReading> getAllReadings() {
-        return meterReadingRepository.findAllOrderByUserNameAndDateDesc();
+        Long orgId = currentUserService.requireCurrentOrganizationId();
+        return meterReadingRepository.findAllByOrganizationIdOrderByUserNameAndDateDesc(orgId);
     }
 
     /**
@@ -113,16 +141,26 @@ public class MeterReadingService {
      * Dohvaća očitanje po ID-u
      */
     public Optional<MeterReading> findById(Long id) {
-        return meterReadingRepository.findById(id);
+        Optional<MeterReading> opt = meterReadingRepository.findById(id);
+        if (opt.isEmpty()) return opt;
+        if (currentUserService.requireCurrentUser().isAdmin()) {
+            Long orgId = currentUserService.requireCurrentOrganizationId();
+            MeterReading mr = opt.get();
+            if (mr.getUser() == null || mr.getUser().getOrganization() == null || !orgId.equals(mr.getUser().getOrganization().getId())) {
+                return Optional.empty();
+            }
+        }
+        return opt;
     }
 
     public List<MeterReading> getAllReadingsByDateRange(LocalDate fromDate, LocalDate toDate) {
+        Long orgId = currentUserService.requireCurrentOrganizationId();
         if (fromDate != null && toDate != null) {
-            return meterReadingRepository.findByReadingDateBetween(fromDate, toDate);
+            return meterReadingRepository.findByOrganizationIdAndReadingDateBetween(orgId, fromDate, toDate);
         } else if (fromDate != null) {
-            return meterReadingRepository.findByReadingDateGreaterThanEqualOrderByReadingDateDesc(fromDate);
+            return meterReadingRepository.findByOrganizationIdAndReadingDateGreaterThanEqualOrderByReadingDateDesc(orgId, fromDate);
         } else if (toDate != null) {
-            return meterReadingRepository.findByReadingDateLessThanEqualOrderByReadingDateDesc(toDate);
+            return meterReadingRepository.findByOrganizationIdAndReadingDateLessThanEqualOrderByReadingDateDesc(orgId, toDate);
         } else {
             return getAllReadings();
         }

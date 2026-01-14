@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="hr" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main}">
+<head>
+    <title>Organizacije</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="mb-0">Organizacije</h3>
+        <a class="btn btn-primary" href="/organizations/new">
+            <i class="bi bi-plus-circle"></i> Nova organizacija
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped align-middle">
+                    <thead>
+                    <tr>
+                        <th>Naziv</th>
+                        <th>Oznaka</th>
+                        <th>Admini</th>
+                        <th>Status</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="org : ${organizations}">
+                        <td th:text="${org.name}">Naziv</td>
+                        <td><code th:text="${org.slug}">slug</code></td>
+                        <td>
+                            <div th:with="admins=${activeAdminsByOrgId[org.id]}">
+                                <div th:if="${admins != null and !#lists.isEmpty(admins)}" class="d-flex flex-column gap-1">
+                                    <div th:each="a : ${admins}">
+                                        <span th:text="${a.fullName}">Admin Ime</span>
+                                        <span class="text-muted" th:if="${a.email}" th:text="'(' + ${a.email} + ')'">(email)</span>
+                                    </div>
+                                </div>
+                                <span th:unless="${admins != null and !#lists.isEmpty(admins)}" class="text-muted">—</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span th:if="${org.enabled}" class="badge bg-success">Aktivna</span>
+                            <span th:unless="${org.enabled}" class="badge bg-secondary">Neaktivna</span>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(organizations)}">
+                        <td colspan="4" class="text-muted">Nema organizacija.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+
+

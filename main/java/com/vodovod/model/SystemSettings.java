@@ -14,6 +14,10 @@ public class SystemSettings {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "organization_id")
+    private Organization organization;
     
     @NotNull(message = "Cijena vode po m3 je obavezna")
     @DecimalMin(value = "0.01", message = "Cijena vode mora biti pozitivna")
@@ -86,6 +90,14 @@ public class SystemSettings {
     
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Organization getOrganization() {
+        return organization;
+    }
+
+    public void setOrganization(Organization organization) {
+        this.organization = organization;
     }
     
     public BigDecimal getWaterPricePerM3() {

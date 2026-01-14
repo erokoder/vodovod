@@ -5,10 +5,13 @@ import com.vodovod.model.User;
 import com.vodovod.repository.BillRepository;
 import com.vodovod.repository.PaymentRepository;
 import com.vodovod.service.PaymentService;
+import com.vodovod.service.CurrentUserService;
 import com.vodovod.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +25,7 @@ import java.util.Optional;
 
 @Controller
 @RequestMapping("/payments")
+@PreAuthorize("hasRole('ADMIN')")
 public class PaymentsController {
 
     @Autowired
@@ -36,6 +40,9 @@ public class PaymentsController {
     @Autowired
     private PaymentRepository paymentRepository;
 
+    @Autowired
+    private CurrentUserService currentUserService;
+
     @GetMapping
     public String index(Model model,
                         @RequestParam(value = "userId", required = false) Long userId,
@@ -46,6 +53,7 @@ public class PaymentsController {
         // Populate users for filter dropdown
         model.addAttribute("users", userService.getActiveWaterUsers());
         model.addAttribute("selectedUserId", userId);
+        Long orgId = currentUserService.requireCurrentOrganizationId();
         if (startDate != null || endDate != null || userId != null) {
             // no defaulting; repository handles nulls flexibly
             User selectedUser = null;
@@ -55,9 +63,9 @@ public class PaymentsController {
                     selectedUser = userOpt.get();
                 }
             }
-            model.addAttribute("payments", paymentRepository.search(selectedUser, startDate, endDate));
+            model.addAttribute("payments", paymentRepository.searchByOrganizationId(orgId, selectedUser, startDate, endDate));
         } else {
-            model.addAttribute("payments", paymentRepository.findAllOrderByPaymentDateDesc());
+            model.addAttribute("payments", paymentRepository.findAllByOrganizationIdOrderByPaymentDateDesc(orgId));
         }
         model.addAttribute("startDate", startDate);
         model.addAttribute("endDate", endDate);
@@ -97,8 +105,11 @@ public class PaymentsController {
                                  @RequestParam(value = "billId", required = false) Long billId,
                                  @RequestParam("paymentDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate paymentDate,
                                  @RequestParam("amount") BigDecimal amount,
-                                 @RequestParam("paymentMethod") String paymentMethod) {
-        paymentService.recordPayment(userId, billId, paymentDate, amount, paymentMethod, "system");
+                                 @RequestParam("paymentMethod") String paymentMethod,
+                                 Authentication authentication) {
+        // Ensure user is in current org
+        userService.getUserById(userId).orElseThrow(() -> new RuntimeException("Korisnik nije pronađen"));
+        paymentService.recordPayment(userId, billId, paymentDate, amount, paymentMethod, authentication.getName());
         return "redirect:/payments";
     }
 }
